@@ -1,0 +1,1 @@
+package ma.ac.esi.gameverseacademy.util;

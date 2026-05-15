@@ -1,0 +1,418 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+@font-face {
+    font-family: 'Vinque';
+    src: local('Vinque'), local('Vinque-Regular');
+}
+
+:root {
+    --bg-dark: #0f0609;
+    --card-bg: #211719;
+    --accent-dark: #0e2b23;
+    --accent-light: #5cffb0;
+    --support-light: #d1f5be;
+    --support-yellow: #edf2c3;
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+    --border-color: rgba(92, 255, 176, 0.2);
+    --status-approved: #5cffb0;
+    --status-pending: #f5b041;
+    --status-rejected: #e74c3c;
+    --font-heading: 'Vinque', 'Outfit', sans-serif;
+    --font-body: 'Outfit', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    background-image: 
+        linear-gradient(rgba(15, 6, 9, 0.93), rgba(15, 6, 9, 0.93)),
+        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(92, 255, 176, 0.03) 10px, rgba(92, 255, 176, 0.03) 20px);
+    min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: normal;
+    letter-spacing: 1px;
+    margin: 0;
+    color: var(--accent-light);
+}
+
+a {
+    color: var(--accent-light);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    color: var(--support-light);
+    text-shadow: 0 0 8px var(--accent-light);
+}
+
+/* Reusable Futuristic Grid */
+.futuristic-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* Reusable Futuristic Card */
+.futuristic-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.futuristic-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 20px; height: 2px;
+    background: var(--accent-light);
+}
+
+.futuristic-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 20px; height: 2px;
+    background: var(--accent-light);
+}
+
+.futuristic-card:hover {
+    border-color: var(--accent-light);
+    box-shadow: 0 0 15px rgba(92, 255, 176, 0.1);
+    transform: translateY(-4px);
+}
+
+/* Buttons */
+.btn-futuristic {
+    background-color: var(--accent-dark);
+    color: var(--accent-light);
+    border: 1px solid var(--accent-light);
+    padding: 8px 16px;
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    cursor: pointer;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-futuristic:hover {
+    background-color: var(--accent-light);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px var(--accent-light);
+}
+
+.btn-futuristic.danger {
+    color: var(--status-rejected);
+    border-color: var(--status-rejected);
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
+.btn-futuristic.danger:hover {
+    background-color: var(--status-rejected);
+    color: var(--text-main);
+    box-shadow: 0 0 15px var(--status-rejected);
+}
+
+.btn-futuristic.edit {
+    color: var(--support-yellow);
+    border-color: var(--support-yellow);
+    background-color: rgba(237, 242, 195, 0.1);
+}
+
+.btn-futuristic.edit:hover {
+    background-color: var(--support-yellow);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px var(--support-yellow);
+}
+
+/* Labels/Tags */
+.tag {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.05);
+    clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+}
+
+.tag.status-approved { color: var(--status-approved); border-color: var(--status-approved); background: rgba(92, 255, 176, 0.1); }
+.tag.status-pending { color: var(--status-pending); border-color: var(--status-pending); background: rgba(245, 176, 65, 0.1); }
+.tag.status-rejected { color: var(--status-rejected); border-color: var(--status-rejected); background: rgba(231, 76, 60, 0.1); }
+
+/* Separators */
+.futuristic-separator {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-light), transparent);
+    margin: 20px 0;
+    opacity: 0.3;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(15, 6, 9, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border: 1px solid var(--accent-light);
+    width: 90%;
+    max-width: 700px;
+    padding: 30px;
+    clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 30px 100%, 0 calc(100% - 30px));
+    position: relative;
+    box-shadow: 0 0 30px rgba(92, 255, 176, 0.15);
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px; right: 15px;
+    background: transparent;
+    border: none;
+    color: var(--accent-light);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.modal-close:hover {
+    transform: scale(1.2);
+    color: var(--support-light);
+}
+
+/* Stars */
+.star-rating {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.star {
+    color: var(--card-bg);
+    -webkit-text-stroke: 1px var(--text-muted);
+    font-size: 1.1rem;
+}
+.star.filled {
+    color: var(--support-yellow);
+    -webkit-text-stroke: 1px var(--support-yellow);
+    text-shadow: 0 0 8px rgba(237, 242, 195, 0.5);
+}
+
+/* Base Avatar */
+.avatar-circular {
+    border-radius: 50%;
+    border: 2px solid var(--accent-light);
+    box-shadow: 0 0 15px rgba(92, 255, 176, 0.1);
+    object-fit: cover;
+    transition: all 0.3s ease;
+    background-color: var(--bg-dark);
+}
+
+.avatar-clickable {
+    cursor: pointer;
+}
+
+.avatar-clickable:hover {
+    box-shadow: 0 0 25px rgba(92, 255, 176, 0.4);
+    transform: scale(1.05);
+}
+
+/* Empty State */
+.empty-state {
+    padding: 40px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed var(--border-color);
+    clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+}
+
+.empty-state h3 {
+    margin-bottom: 10px;
+    color: var(--support-light);
+}
+
+.empty-state p {
+    color: var(--text-muted);
+}
+
+/* Color Selectors */
+.color-selectors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 10px;
+}
+
+.color-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+}
+
+.color-dot:hover {
+    transform: scale(1.2);
+    border-color: var(--accent-light);
+    box-shadow: 0 0 15px rgba(92, 255, 176, 0.4);
+}
+
+.color-dot.active {
+    transform: scale(1.3);
+    border-color: #ffffff;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+/* Form Styles for editing */
+.futuristic-form-group {
+    margin-bottom: 20px;
+}
+
+.futuristic-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--support-light);
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.futuristic-input {
+    width: 100%;
+    background: rgba(15, 6, 9, 0.5);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 12px;
+    font-family: var(--font-body);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.futuristic-input:focus {
+    border-color: var(--accent-light);
+    box-shadow: 0 0 10px rgba(92, 255, 176, 0.2);
+}
+
+/* Proportional Star Rating (from Mod Details) */
+.avg-star-wrap {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+}
+
+.avg-star-wrap img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.avg-star-empty {
+    z-index: 1;
+    opacity: 0.3;
+}
+
+.avg-star-filled-clip {
+    z-index: 2;
+    /* clip-path will be set inline based on rating */
+}
+
+.mod-rating-inline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rating-number {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    color: var(--accent-light);
+    line-height: 1;
+}
+/* Global Light Mode Support */
+body.light-mode {
+    background-color: #edf2c3;
+    background-image: none;
+    color: #0e2b23;
+    --bg-dark: #edf2c3;
+    --card-bg: #d1f5be;
+    --accent-light: #0e2b23;
+    --text-main: #0e2b23;
+    --text-muted: rgba(14, 43, 35, 0.6);
+    --border-color: rgba(14, 43, 35, 0.15);
+}
+
+body.light-mode h1, 
+body.light-mode h2, 
+body.light-mode h3, 
+body.light-mode h4, 
+body.light-mode h5, 
+body.light-mode h6 {
+    color: #0e2b23;
+}
+
+body.light-mode .futuristic-card {
+    background-color: #d1f5be;
+    border-color: rgba(14, 43, 35, 0.1);
+}
+
+body.light-mode .btn-futuristic {
+    background-color: #0e2b23;
+    color: #ffffff;
+    border-color: #0e2b23;
+}
+
+body.light-mode .btn-futuristic:hover {
+    background-color: #1a4a3e;
+    color: #ffffff;
+}
+
+body.light-mode .tag {
+    background: rgba(14, 43, 35, 0.05);
+    border-color: rgba(14, 43, 35, 0.15);
+    color: #0e2b23;
+}
+
+body.light-mode .empty-state {
+    background: rgba(14, 43, 35, 0.03);
+}

@@ -1,0 +1,59 @@
+# Target folder
+target/
+bin/
+build/
+out/
+release/
+
+# Eclipse
+.settings/
+.packet/
+.classpath
+.project
+.metadata
+.recommenders/
+**/src/.metadata
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Visual Studio Code
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Databases
+data/*.db
+data/*.db-journal
+*.sqlite
+*.sqlite-journal
+
+# Logs
+*.log
+tomcat.8080/
+
+# Maven
+dependency-reduced-pom.xml
+.mvn/wrapper/maven-wrapper.jar
+*.versionsBackup
+release.properties
+pom.xml.releaseBackup
+pom.xml.tag
+pom.xml.next
+pom.xml.patch
+
+# Temporary files
+sources.txt
+logins.txt
+temp/
+tmp/
+*.tmp
+*.bak
+~*

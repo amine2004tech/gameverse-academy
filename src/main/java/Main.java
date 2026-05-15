@@ -9,9 +9,6 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        Tomcat tomcat = new Tomcat();
-        tomcat.setPort(8080);
-        tomcat.getConnector();
 
         String webappDir = new File("webapp").getAbsolutePath();
         if (!new File(webappDir).exists()) {

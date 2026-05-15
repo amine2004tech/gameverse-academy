@@ -8,8 +8,6 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-# Copy the shaded JAR
-COPY --from build /app/target/gameverseacademy-1.0-SNAPSHOT.war app.jar
 
 # Copy webapp resources (as Main.java expects them on the filesystem)
 COPY src/main/webapp /app/src/main/webapp

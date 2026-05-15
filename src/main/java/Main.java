@@ -1,5 +1,4 @@
 
-
 import ma.ac.esi.gameverseacademy.controller.*;
 import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
@@ -9,6 +8,16 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
+        Tomcat tomcat = new Tomcat();
+        
+        // Support dynamic port for deployment (e.g., Railway, Heroku)
+        String webPort = System.getenv("PORT");
+        if (webPort == null || webPort.isEmpty()) {
+            webPort = "8080";
+        }
+        tomcat.setPort(Integer.parseInt(webPort));
+        
+        tomcat.getConnector();
 
         String webappDir = new File("webapp").getAbsolutePath();
         if (!new File(webappDir).exists()) {
@@ -59,10 +68,10 @@ public class Main {
 
         tomcat.start();
         System.out.println("=============================================");
-        System.out.println("  GameVerse Academy RUNNING on port 8080");
+        System.out.println("  GameVerse Academy RUNNING on port " + webPort);
         System.out.println("=============================================");
-        System.out.println(">>> http://localhost:8080/gameverseacademy/ModDetailsController?id=5");
-        System.out.println(">>> http://localhost:8080/gameverseacademy/mods.jsp");
+        System.out.println(">>> http://localhost:" + webPort + "/gameverseacademy/ModDetailsController?id=5");
+        System.out.println(">>> http://localhost:" + webPort + "/gameverseacademy/mods.jsp");
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try { tomcat.stop(); tomcat.destroy(); }

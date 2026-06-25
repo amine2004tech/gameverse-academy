@@ -10,9 +10,6 @@ import java.io.*;
 @WebServlet("/DownloadModController")
 public class DownloadController extends HttpServlet {
 
-    // Dynamically resolved in doGet
-
-
     @Override
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response) {
@@ -24,7 +21,14 @@ public class DownloadController extends HttpServlet {
                 return;
             }
 
-            int modId = Integer.parseInt(idParam);
+            int modId;
+            try {
+                modId = Integer.parseInt(idParam);
+            } catch (NumberFormatException e) {
+                response.sendError(400, "Invalid ID");
+                return;
+            }
+
             ModService modService = new ModService();
             Mod mod = modService.getModById(modId);
 
@@ -36,17 +40,27 @@ public class DownloadController extends HttpServlet {
             String baseUploadPath = getServletContext().getRealPath("/assets");
             File file = modService.getPhysicalModFile(modId, baseUploadPath);
 
+            // SEC-FIX: Canonical path check to prevent path traversal
+            String canonicalBase = new File(baseUploadPath).getCanonicalPath();
+            String canonicalFile = file.getCanonicalPath();
+            if (!canonicalFile.startsWith(canonicalBase)) {
+                response.sendError(403, "Access denied");
+                return;
+            }
+
             if (!file.exists()) {
-                response.sendError(404, "Physical archive not found");
+                response.sendError(404, "Archive not found");
                 return;
             }
 
             // Register download (Business logic)
             modService.registerDownload(modId);
 
-            // Set response headers
+            // SEC-FIX: Sanitize filename for Content-Disposition to prevent header injection
+            String safeFileName = mod.getFileName().replaceAll("[^a-zA-Z0-9._-]", "_");
             response.setContentType("application/zip");
-            response.setHeader("Content-Disposition", "attachment; filename=\"" + mod.getFileName() + "\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + safeFileName + "\"");
+            response.setContentLengthLong(file.length());
 
             // Stream file
             try (FileInputStream in = new FileInputStream(file);
@@ -59,7 +73,9 @@ public class DownloadController extends HttpServlet {
             }
 
         } catch (Exception e) {
-            try { response.sendError(500, e.getMessage()); } catch (IOException ignored) {}
+            // SEC-FIX: Don't leak exception message to client
+            System.err.println("[DownloadController] Error: " + e.getMessage());
+            try { response.sendError(500, "Download failed"); } catch (IOException ignored) {}
         }
     }
 }

@@ -2,6 +2,7 @@ package ma.ac.esi.gameverseacademy.service;
 
 import ma.ac.esi.gameverseacademy.model.User;
 import ma.ac.esi.gameverseacademy.repository.UserRepository;
+import ma.ac.esi.gameverseacademy.security.PasswordHasher;
 
 public class UserService {
 
@@ -120,7 +121,8 @@ public class UserService {
             return false;
         }
 
-        if (!user.getPassword().equals(currentPassword)) {
+        // SEC-FIX: Use PasswordHasher for verification instead of plaintext equals
+        if (!PasswordHasher.verifyPassword(currentPassword, user.getPassword())) {
             return false;
         }
 

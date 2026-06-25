@@ -1,6 +1,7 @@
 package ma.ac.esi.gameverseacademy.repository;
 
 import ma.ac.esi.gameverseacademy.model.User;
+import ma.ac.esi.gameverseacademy.security.PasswordHasher;
 import ma.ac.esi.gameverseacademy.util.DBUtil;
 
 import java.sql.Connection;
@@ -17,25 +18,29 @@ public class UserRepository {
     public User getUserByCredentials(String login,
             String password) {
 
+        // SEC-FIX: Fetch user by login only, verify password with hasher
         String sql = "SELECT id, login, password, role, username, avatar " +
                 "FROM users " +
-                "WHERE login = ? AND password = ?";
+                "WHERE login = ?";
 
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, login);
-            stmt.setString(2, password);
 
             try (ResultSet rs = stmt.executeQuery()) {
 
                 if (rs.next()) {
-                    return mapRowToUser(rs);
+                    User user = mapRowToUser(rs);
+                    // Verify password (supports both hashed and legacy plaintext)
+                    if (PasswordHasher.verifyPassword(password, user.getPassword())) {
+                        return user;
+                    }
                 }
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("[UserRepository] Login query error: " + e.getMessage());
         }
 
         return null;
@@ -149,18 +154,20 @@ public class UserRepository {
     public boolean updatePassword(int userId,
             String newPassword) {
 
+        // SEC-FIX: Hash password before storing
+        String hashedPassword = PasswordHasher.hashPassword(newPassword);
         String sql = "UPDATE users SET password = ? WHERE id = ?";
 
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, newPassword);
+            stmt.setString(1, hashedPassword);
             stmt.setInt(2, userId);
 
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("[UserRepository] Password update error: " + e.getMessage());
         }
 
         return false;

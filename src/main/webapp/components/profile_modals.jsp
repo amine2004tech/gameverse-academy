@@ -1,1 +1,66 @@
-<!-- Profile Page Modals --><link rel="stylesheet" href="${pageContext.request.contextPath}/css/profile_modals.css"><!-- Edit Username --> <div class="modal-overlay" id="editUsernameModal">     <div class="modal-content">         <button class="modal-close" onclick="closeModal('editUsernameModal')">&times;</button>         <h3 class="modal-title">UPDATE IDENTITY</h3>         <form action="${pageContext.request.contextPath}/ProfileController?action=updateUsername" method="post">             <div class="form-group">                 <label class="form-label">New Username</label>                 <input type="text" name="username" class="form-input" value="${user.username}" required>             </div>             <button type="submit" class="profile-btn" style="width: 100%;">VALIDATE UPDATE</button>         </form>     </div> </div>  <!-- Change Password --> <div class="modal-overlay" id="passwordModal">     <div class="modal-content">         <button class="modal-close" onclick="closeModal('passwordModal')">&times;</button>         <h3 class="modal-title">SECURITY UPDATE</h3>         <form action="${pageContext.request.contextPath}/ProfileController?action=updatePassword" method="post">             <div class="form-group">                 <label class="form-label">Current Access Code</label>                 <input type="password" name="currentPassword" class="form-input" required>             </div>             <div class="form-group">                 <label class="form-label">New Access Code</label>                 <input type="password" name="newPassword" class="form-input" required>             </div>             <button type="submit" class="profile-btn" style="width: 100%;">AUTHORIZE CHANGE</button>         </form>     </div> </div>  <!-- Avatar Modal --> <div class="modal-overlay" id="avatarModal">     <div class="modal-content" style="max-width: 600px;">         <button class="modal-close" onclick="closeModal('avatarModal')">&times;</button>         <h3 class="modal-title">CHOOSE AVATAR</h3>         <div id="avatarGrid" class="avatar-grid">             <!-- Avatars injected here -->         </div>          <div class="color-selectors">             <div class="color-dot active" data-color="blue" title="Deep Blue"></div>             <div class="color-dot" data-color="red" title="Blood Red"></div>             <div class="color-dot" data-color="green" title="Emerald Green"></div>             <div class="color-dot" data-color="bright green" title="Neon Green"></div>             <div class="color-dot" data-color="purple" title="Royal Purple"></div>             <div class="color-dot" data-color="teal" title="Cyber Teal"></div>             <div class="color-dot" data-color="orange" title="Molten Orange"></div>             <div class="color-dot" data-color="bright yellow" title="Electric Yellow"></div>             <div class="color-dot" data-color="sakura pink" title="Sakura Pink"></div>             <div class="color-dot" data-color="silver pink" title="Silver Pink"></div>         </div>         <form id="avatarUpdateForm" action="${pageContext.request.contextPath}/ProfileController?action=updateAvatar"             method="post" style="display:none;">             <input type="hidden" name="avatar" id="selectedAvatarInput">         </form>     </div> </div>
+<!-- Profile Page Modals -->
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/profile_modals.css">
+
+<!-- Edit Username -->
+<div class="modal-overlay" id="editUsernameModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('editUsernameModal')">&times;</button>
+        <h3 class="modal-title">UPDATE IDENTITY</h3>
+        <form action="${pageContext.request.contextPath}/ProfileController?action=updateUsername" method="post">
+            <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+            <div class="form-group">
+                <label class="form-label">New Username</label>
+                <input type="text" name="username" class="form-input" value="${user.username}" required>
+            </div>
+            <button type="submit" class="profile-btn" style="width: 100%;">VALIDATE UPDATE</button>
+        </form>
+    </div>
+</div>
+
+<!-- Change Password -->
+<div class="modal-overlay" id="passwordModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('passwordModal')">&times;</button>
+        <h3 class="modal-title">SECURITY UPDATE</h3>
+        <form action="${pageContext.request.contextPath}/ProfileController?action=updatePassword" method="post">
+            <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+            <div class="form-group">
+                <label class="form-label">Current Access Code</label>
+                <input type="password" name="currentPassword" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">New Access Code</label>
+                <input type="password" name="newPassword" class="form-input" required>
+            </div>
+            <button type="submit" class="profile-btn" style="width: 100%;">AUTHORIZE CHANGE</button>
+        </form>
+    </div>
+</div>
+
+<!-- Avatar Modal -->
+<div class="modal-overlay" id="avatarModal">
+    <div class="modal-content" style="max-width: 600px;">
+        <button class="modal-close" onclick="closeModal('avatarModal')">&times;</button>
+        <h3 class="modal-title">CHOOSE AVATAR</h3>
+        <div id="avatarGrid" class="avatar-grid">
+            <!-- Avatars injected here -->
+        </div>
+        <div class="color-selectors">
+            <div class="color-dot active" data-color="blue" title="Deep Blue"></div>
+            <div class="color-dot" data-color="red" title="Blood Red"></div>
+            <div class="color-dot" data-color="green" title="Emerald Green"></div>
+            <div class="color-dot" data-color="bright green" title="Neon Green"></div>
+            <div class="color-dot" data-color="purple" title="Royal Purple"></div>
+            <div class="color-dot" data-color="teal" title="Cyber Teal"></div>
+            <div class="color-dot" data-color="orange" title="Molten Orange"></div>
+            <div class="color-dot" data-color="bright yellow" title="Electric Yellow"></div>
+            <div class="color-dot" data-color="sakura pink" title="Sakura Pink"></div>
+            <div class="color-dot" data-color="silver pink" title="Silver Pink"></div>
+        </div>
+        <form id="avatarUpdateForm" action="${pageContext.request.contextPath}/ProfileController?action=updateAvatar"
+            method="post" style="display:none;">
+            <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+            <input type="hidden" name="avatar" id="selectedAvatarInput">
+        </form>
+    </div>
+</div>

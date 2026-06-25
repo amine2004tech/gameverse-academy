@@ -121,7 +121,11 @@
                                         </div>
                                         <div style="display: flex; gap: 10px;">
                                             <a href="${pageContext.request.contextPath}/ModDetailsController?id=${m.id}" class="profile-btn" style="padding: 6px 12px; font-size: 0.65rem;">VIEW</a>
-                                            <a href="${pageContext.request.contextPath}/DeleteModController?id=${m.id}" class="profile-btn danger" style="padding: 6px 12px; font-size: 0.65rem;" onclick="return confirm('Confirm deletion of this entry?');">DELETE</a>
+                                            <form action="${pageContext.request.contextPath}/DeleteModController" method="post" style="display:inline; margin:0;">
+                                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+                                                <input type="hidden" name="id" value="${m.id}">
+                                                <button type="submit" class="profile-btn danger" style="padding: 6px 12px; font-size: 0.65rem; border:none; cursor:pointer;" onclick="return confirm('Confirm deletion of this entry?');">DELETE</button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>

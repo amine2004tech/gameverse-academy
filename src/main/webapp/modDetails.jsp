@@ -3,6 +3,7 @@
         <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
             <%@ page import="java.util.List,java.util.Map" %>
                 <%@ page import="ma.ac.esi.gameverseacademy.model.*" %>
+                <%@ page import="ma.ac.esi.gameverseacademy.security.HtmlEncoder" %>
                     <% Mod mod=(Mod) request.getAttribute("mod"); Review userReview=(Review)
                         request.getAttribute("userReview"); List<Review> reviews = (mod != null) ? mod.getReviews() :
                         null;
@@ -24,7 +25,7 @@
                                         <meta charset="UTF-8">
                                         <meta name="viewport" content="width=device-width,initial-scale=1">
                                         <title>
-                                            <%= (mod!=null?mod.getTitle():"Mod") %> — GameVerse Academy
+                                            <%= HtmlEncoder.encode(mod!=null?mod.getTitle():"Mod") %> — GameVerse Academy
                                         </title>
 
                                         <!-- Fonts -->
@@ -119,14 +120,14 @@
                                                                             style="text-decoration: none;">
                                                                             <span class="mod-tag-ticket"
                                                                                 style="--tag-rgb: <%=r%>,<%=g%>,<%=b%>;">
-                                                                                <%= t.getName() %>
+                                                                                <%= HtmlEncoder.encode(t.getName()) %>
                                                                             </span>
                                                                         </a>
                                                                         <% } } %>
                                                                 </div>
 
                                                                 <h1 class="mod-title-large">
-                                                                    <%= mod.getTitle() %>
+                                                                    <%= HtmlEncoder.encode(mod.getTitle()) %>
                                                                 </h1>
 
                                                                 <div class="author-archive-strip">
@@ -153,7 +154,7 @@
                                                                             <span
                                                                                 class="archive-label">Contributor</span>
                                                                             <span class="archive-value">@<%=
-                                                                                    mod.getAuthorName() %></span>
+                                                                                    HtmlEncoder.encode(mod.getAuthorName()) %></span>
                                                                         </div>
                                                                         <div class="archive-info"
                                                                             style="margin-left: 20px;">
@@ -169,7 +170,7 @@
                                                             </header>
 
                                                             <div class="mod-description-text">
-                                                                <%= mod.getDescription() !=null ? mod.getDescription()
+                                                                <%= mod.getDescription() !=null ? HtmlEncoder.encode(mod.getDescription())
                                                                     : "Data missing." %>
                                                             </div>
 
@@ -177,7 +178,7 @@
                                                                 <div class="meta-archive-item">
                                                                     <span class="archive-label">Base Game</span>
                                                                     <div class="archive-value">
-                                                                        <%= game !=null ? game.getTitle() : "N/A" %>
+                                                                        <%= game !=null ? HtmlEncoder.encode(game.getTitle()) : "N/A" %>
                                                                     </div>
                                                                 </div>
                                                                 <div class="meta-archive-item">
@@ -273,6 +274,7 @@
                                                                 <% if(currentUser !=null) { %>
                                                                     <div class="review-write-panel">
                                                                         <form action="<%= (userReview != null) ? ctx + "/UpdateReviewController" : ctx + "/ReviewController" %>" method="post">
+                                                                            <input type="hidden" name="csrfToken" value="<%= session.getAttribute("csrfToken") %>">
                                                                             <% if(userReview !=null){ %><input
                                                                                     type="hidden" name="reviewId"
                                                                                     value="<%= userReview.getId() %>">
@@ -349,8 +351,7 @@
                                                                                                 style="flex:1;">
                                                                                                 <span
                                                                                                     class="archive-value">@
-                                                                                                    <%= r.getUsername()
-                                                                                                        %></span>
+                                                                                                    <%= HtmlEncoder.encode(r.getUsername()) %></span>
                                                                                                 <div class="review-meta"
                                                                                                     style="display:flex; align-items:center; gap:10px; margin-top:5px;">
                                                                                                     <div class="avg-star-container"
@@ -373,8 +374,7 @@
 
                                                                                                 <p
                                                                                                     style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 15px; line-height: 1.6;">
-                                                                                                    <%= r.getComment()
-                                                                                                        %>
+                                                                                                    <%= HtmlEncoder.encode(r.getComment()) %>
                                                                                                 </p>
                                                                                             </div>
 
@@ -385,6 +385,7 @@
                                                                                                     action="<%=ctx%>/DeleteReviewController"
                                                                                                     method="post"
                                                                                                     style="margin-left:auto;">
+                                                                                                    <input type="hidden" name="csrfToken" value="<%= session.getAttribute("csrfToken") %>">
                                                                                                     <input type="hidden"
                                                                                                         name="reviewId"
                                                                                                         value="<%= r.getId() %>">

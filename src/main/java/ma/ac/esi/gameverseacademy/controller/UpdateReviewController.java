@@ -27,9 +27,20 @@ public class UpdateReviewController extends HttpServlet {
 
         User user = (User) session.getAttribute("user");
 
-        int reviewId = Integer.parseInt(request.getParameter("reviewId"));
-        int modId = Integer.parseInt(request.getParameter("modId"));
-        int rating = Integer.parseInt(request.getParameter("rating"));
+        // SEC-FIX: Safe parsing
+        int reviewId, modId, rating;
+        try {
+            reviewId = Integer.parseInt(request.getParameter("reviewId"));
+            modId = Integer.parseInt(request.getParameter("modId"));
+            rating = Integer.parseInt(request.getParameter("rating"));
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/ModController");
+            return;
+        }
+        if (rating < 1 || rating > 5) {
+            response.sendRedirect(request.getContextPath() + "/ModDetailsController?id=" + modId);
+            return;
+        }
         String comment = request.getParameter("comment");
 
         Review review = new Review();

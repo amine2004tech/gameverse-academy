@@ -28,8 +28,21 @@ public class ReviewController extends HttpServlet {
 
         User user = (User) session.getAttribute("user");
 
-        int modId = Integer.parseInt(request.getParameter("modId"));
-        int rating = Integer.parseInt(request.getParameter("rating"));
+        // SEC-FIX: Safe parsing of user-supplied numeric params
+        int modId;
+        int rating;
+        try {
+            modId = Integer.parseInt(request.getParameter("modId"));
+            rating = Integer.parseInt(request.getParameter("rating"));
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/ModController");
+            return;
+        }
+        // SEC-FIX: Validate rating range server-side
+        if (rating < 1 || rating > 5) {
+            response.sendRedirect(request.getContextPath() + "/ModDetailsController?id=" + modId);
+            return;
+        }
         String comment = request.getParameter("comment");
 
         Review review = new Review();

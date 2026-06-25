@@ -26,8 +26,15 @@ public class DeleteReviewController extends HttpServlet {
 
         User user = (User) session.getAttribute("user");
 
-        int reviewId = Integer.parseInt(request.getParameter("reviewId"));
-        int modId = Integer.parseInt(request.getParameter("modId"));
+        // SEC-FIX: Safe parsing
+        int reviewId, modId;
+        try {
+            reviewId = Integer.parseInt(request.getParameter("reviewId"));
+            modId = Integer.parseInt(request.getParameter("modId"));
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/ModController");
+            return;
+        }
 
         ReviewService reviewService = new ReviewService();
 

@@ -31,8 +31,14 @@ public class LoginController extends HttpServlet {
         User user = userService.getUserByCredentials(login, password);
 
         if (user != null) {
-            HttpSession session = request.getSession();
+            // SEC-FIX: Prevent session fixation by invalidating pre-auth session
+            HttpSession oldSession = request.getSession(false);
+            if (oldSession != null) {
+                oldSession.invalidate();
+            }
+            HttpSession session = request.getSession(true); // new session
             session.setAttribute("user", user);
+            session.setMaxInactiveInterval(30 * 60); // 30 minutes
 
             response.sendRedirect(request.getContextPath() + "/ModController");
         } else {

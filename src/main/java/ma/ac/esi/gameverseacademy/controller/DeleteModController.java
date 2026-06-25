@@ -14,8 +14,9 @@ import java.io.IOException;
 @WebServlet("/DeleteModController")
 public class DeleteModController extends HttpServlet {
 
+    // SEC-FIX: Changed from GET to POST to prevent CSRF via link injection
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
@@ -32,14 +33,17 @@ public class DeleteModController extends HttpServlet {
                 int modId = Integer.parseInt(idParam);
                 ModService modService = new ModService();
                 modService.deleteMod(modId, currentUser);
-            } catch (NumberFormatException e) {}
+            } catch (NumberFormatException e) { /* ignore bad input */ }
         }
 
-        String referer = request.getHeader("Referer");
-        if (referer != null) {
-            response.sendRedirect(referer);
-        } else {
-            response.sendRedirect(request.getContextPath() + "/ModController");
-        }
+        // SEC-FIX: Removed open redirect via untrusted Referer header
+        response.sendRedirect(request.getContextPath() + "/ModController");
+    }
+
+    // SEC-FIX: Reject GET requests for state-changing action
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Use POST to delete mods");
     }
 }

@@ -26,7 +26,10 @@ public class ModController extends HttpServlet {
         String gameIdParam = request.getParameter("game");
         String tagsParam = request.getParameter("tags");
 
-        Integer selectedGame = (gameIdParam != null && !gameIdParam.isEmpty()) ? Integer.parseInt(gameIdParam) : null;
+        Integer selectedGame = null;
+        if (gameIdParam != null && !gameIdParam.isEmpty()) {
+            try { selectedGame = Integer.parseInt(gameIdParam); } catch (NumberFormatException e) { /* ignore */ }
+        }
         
         List<Integer> selectedTags = ModService.parseTagIds(tagsParam);
 

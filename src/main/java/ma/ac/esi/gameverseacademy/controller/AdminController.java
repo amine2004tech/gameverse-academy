@@ -37,7 +37,10 @@ public class AdminController extends HttpServlet {
         String gameIdParam = request.getParameter("game");
         String tagsParam = request.getParameter("tags");
 
-        Integer selectedGame = (gameIdParam != null && !gameIdParam.isEmpty()) ? Integer.parseInt(gameIdParam) : null;
+        Integer selectedGame = null;
+        if (gameIdParam != null && !gameIdParam.isEmpty()) {
+            try { selectedGame = Integer.parseInt(gameIdParam); } catch (NumberFormatException e) { /* ignore bad input */ }
+        }
 
         java.util.List<Integer> selectedTags = ModService.parseTagIds(tagsParam);
 
@@ -67,6 +70,18 @@ public class AdminController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // SEC-FIX: Enforce RBAC on POST actions (was missing)
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            return;
+        }
+        User user = (User) session.getAttribute("user");
+        if (!"ADMIN".equalsIgnoreCase(user.getRole())) {
+            response.sendRedirect(request.getContextPath() + "/error403.jsp");
+            return;
+        }
 
         String action = request.getParameter("action");
         String modIdParam = request.getParameter("modId");

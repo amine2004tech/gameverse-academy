@@ -31,6 +31,7 @@
                 <% } %>
 
                     <form action="${pageContext.request.contextPath}/LoginController" method="post">
+                        <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
 
                         <div class="input-group">
                             <label class="input-label" for="uname">Username</label>

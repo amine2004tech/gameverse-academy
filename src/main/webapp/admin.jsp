@@ -143,11 +143,16 @@
                                         <div class="admin-action-row">
                                             <a href="<%=ctx%>/ModDetailsController?id=${item.id}" class="btn-admin btn-view">VIEW</a>
                                             <form action="<%=ctx%>/AdminController" method="post" style="flex:1; margin:0; display:flex;">
+                                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                                 <input type="hidden" name="action" value="approve">
                                                 <input type="hidden" name="modId" value="${item.id}">
                                                 <button type="submit" class="btn-admin btn-approve" style="width:100%; border:none;" onclick="return confirm('Authorize this mod?');">AUTHORIZE</button>
                                             </form>
-                                            <a href="<%=ctx%>/DeleteModController?id=${item.id}" class="btn-admin btn-danger" onclick="return confirm('Disapprove and delete this mod?');">DISAPPROVE</a>
+                                            <form action="<%=ctx%>/DeleteModController" method="post" style="flex:1; margin:0; display:flex;">
+                                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+                                                <input type="hidden" name="id" value="${item.id}">
+                                                <button type="submit" class="btn-admin btn-danger" style="width:100%; border:none;" onclick="return confirm('Disapprove and delete this mod?');">DISAPPROVE</button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -213,7 +218,11 @@
 
                                         <div class="admin-action-row" style="border-top: none; padding-top: 0;">
                                             <a href="<%=ctx%>/ModDetailsController?id=${item.id}" class="btn-admin btn-view">VIEW</a>
-                                            <a href="<%=ctx%>/DeleteModController?id=${item.id}" class="btn-admin btn-danger" onclick="return confirm('Permanently delete this approved mod?');">DELETE</a>
+                                            <form action="<%=ctx%>/DeleteModController" method="post" style="flex:1; margin:0; display:flex;">
+                                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+                                                <input type="hidden" name="id" value="${item.id}">
+                                                <button type="submit" class="btn-admin btn-danger" style="width:100%; border:none;" onclick="return confirm('Permanently delete this approved mod?');">DELETE</button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>

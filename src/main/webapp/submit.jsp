@@ -134,6 +134,7 @@
                 <h2 class="modal-title" id="modalTitle">ARCHIVE NEW ENTRY</h2>
                 
                 <form id="submitModForm" action="${pageContext.request.contextPath}/ModSubmitController" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                     <input type="hidden" id="modId" name="modId" value="">
                     
                     <div class="form-group">

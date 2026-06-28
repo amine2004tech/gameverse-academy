@@ -6,18 +6,20 @@
   <img src="https://img.shields.io/badge/Database-SQLite%20%2F%20MariaDB-blueviolet?style=for-the-badge"/>
 </p>
 
-**GameVerse Academy** is a cinematic, high-performance mod archive and submission platform built with Java EE. It is designed to manage game modifications, user submissions, reviews, profiles, and secure content distribution.
+GameVerse Academy is a high-performance, cinematic **modding ecosystem platform** built with Java EE. It is designed to manage game modifications, user submissions, reviews, profiles, and secure content distribution under a modern, responsive, and secure architecture.
 
 ---
 
-## 🚀 Overview
+## 🚀 Project Overview
 
-GameVerse Academy features a custom MVC-inspired architecture utilizing vanilla Java Servlets and JSP running on an embedded Tomcat container. Key features include:
-- **Authentication**: Salted password hashing, registration, and session hijack defenses.
-- **Mod Submission Pipeline**: Drag-and-drop image reordering, primary thumbnail designation, and whitelist validation.
+GameVerse Academy provides game enthusiasts and creators with a secure vault to host, discuss, and download modifications. The system features a custom MVC-inspired architecture built on vanilla Java Servlets and JSP, running on an embedded Tomcat server.
+
+Key capabilities include:
+- **Authentication & Registration**: Modern sign-up and secure session management.
+- **Mod Submission Pipeline**: Drag-and-drop image reordering, star-based thumbnail selection, and ZIP file parsing.
 - **Review Engine**: Community rating and comment threads.
-- **User Profiles**: Custom username updates and avatar uploads.
-- **Security Hardening**: Anti-DoS file upload constraints, session fixation protection, and XSS input filters.
+- **User Profiles**: Custom username updates and dynamic avatar uploads.
+- **Security Hardening**: Session fixation protection, secure password hashing, strict file upload limits, and input sanitization filters.
 
 ---
 
@@ -74,22 +76,13 @@ GameVerse Academy features a custom MVC-inspired architecture utilizing vanilla 
 
 ---
 
-## 📦 Standalone Packages
+## 📦 Sample Downloads
 
-Heavy binary distributions are hosted externally. Use these official links to download pre-packaged standalone archives:
+To prevent repository bloat, heavy binary artifacts are hosted externally. Please use the following official links to download pre-packaged standalone distributions:
 
 * 📦 **Sample JAR (Runnable Archive)**:  
   [Download gameverse.jar (Google Drive)](https://drive.google.com/file/d/1QowF6v6k9CpRkw4fsQUjjK9I8kt1wmLx/view?usp=drive_link)
 * 🚀 **Sample EXE (Windows Standalone)**:  
   [Download GameVerseAcademy.exe (Google Drive)](https://drive.google.com/file/d/1m5KB_N1GccXvG0H-ONwnAqkec5xki4So/view?usp=drive_link)
 
----
-
-## 🔑 Setup & Demo Credentials
-
-Seeded accounts are provided for sandbox testing:
-- **Admin**: `amine@test.com` (Password: `admin123`)
-- **Player**: `player1@gmail.com` (Password: `pass123`)
-
-For step-by-step local running instructions, configuring environment variables, and restoring database seeds, please refer to the local **`SETUP_GUIDE.md`** file.
-The list of testing accounts can be found in **`DEMO_LOGINS.txt`**.
+--

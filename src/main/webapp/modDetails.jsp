@@ -4,7 +4,12 @@
             <%@ page import="java.util.List,java.util.Map" %>
                 <%@ page import="ma.ac.esi.gameverseacademy.model.*" %>
                 <%@ page import="ma.ac.esi.gameverseacademy.security.HtmlEncoder" %>
-                    <% Mod mod=(Mod) request.getAttribute("mod"); Review userReview=(Review)
+                    <% Mod mod=(Mod) request.getAttribute("mod"); 
+                        if (mod == null) {
+                            response.sendRedirect(request.getContextPath() + "/ModController");
+                            return;
+                        }
+                        Review userReview=(Review)
                         request.getAttribute("userReview"); List<Review> reviews = (mod != null) ? mod.getReviews() :
                         null;
                         double averageRating = (mod != null) ? mod.getAverageRating() : 0.0;

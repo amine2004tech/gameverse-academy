@@ -2,6 +2,16 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%
+    if (session.getAttribute("user") == null) {
+        response.sendRedirect(request.getContextPath() + "/LoginController");
+        return;
+    }
+    if (request.getAttribute("mods") == null) {
+        response.sendRedirect(request.getContextPath() + "/ProfileController");
+        return;
+    }
+%>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -95,14 +105,14 @@
                                 <span class="mod-status-tag status-${fn:toLowerCase(status)}">${status}</span>
                                 
                                 <div class="mod-thumbnail-wrapper">
-                                    <c:set var="thumb" value="${not empty m.thumbnail ? m.thumbnail : m.id.toString() + '_0.jpg'}" />
-                                    <img src="${pageContext.request.contextPath}/assets/images/mods/${thumb}" alt="${m.title}" class="mod-thumbnail" onerror="this.src='${pageContext.request.contextPath}/assets/avatar.jpg'">
+                                    <c:set var="thumb" value="${not empty m.thumbnail ? m.thumbnail : m.id.toString().concat('_0.jpg')}" />
+                                    <img src="${pageContext.request.contextPath}/assets/images/mods/${thumb}" alt="${fn:escapeXml(m.title)}" class="mod-thumbnail" onerror="this.src='${pageContext.request.contextPath}/assets/images/mods/default_mod.png'">
                                 </div>
 
                                 <div class="mod-card-content">
                                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; margin-bottom: 10px;">
                                         <div style="flex: 1;">
-                                            <h3 class="mod-card-title">${m.title}</h3>
+                                            <h3 class="mod-card-title">${fn:escapeXml(m.title)}</h3>
                                             <div class="mod-card-game">${not empty m.gameTitle ? m.gameTitle : 'Archives'}</div>
                                         </div>
                                         
@@ -111,7 +121,7 @@
                                                 <div class="star-layer empty"></div>
                                                 <div class="star-layer filled"></div>
                                             </div>
-                                            <div class="mod-card-rating-text">${m.averageRating > 0 ? m.averageRating : '0.0'}</div>
+                                            <div class="mod-card-rating-text"><fmt:formatNumber value="${m.averageRating}" pattern="0.0" /></div>
                                         </div>
                                     </div>
                                     

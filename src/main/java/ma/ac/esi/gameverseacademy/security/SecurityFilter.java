@@ -31,7 +31,8 @@ public class SecurityFilter implements Filter {
             "/UpdateReviewController",
             "/DeleteReviewController",
             "/DeleteModController",
-            "/ProfileController"
+            "/ProfileController",
+            "/register"
     );
 
     // Paths where input sanitization should be applied
@@ -41,7 +42,8 @@ public class SecurityFilter implements Filter {
             "/AdminController",
             "/ReviewController",
             "/UpdateReviewController",
-            "/ProfileController"
+            "/ProfileController",
+            "/register"
     );
 
     @Override
@@ -57,6 +59,39 @@ public class SecurityFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         String path = httpRequest.getServletPath();
         String method = httpRequest.getMethod();
+
+        // ========== SEC-FIX: Block Direct Access to Mod Archives ==========
+        if (path != null) {
+            String requestURI = httpRequest.getRequestURI();
+            if (requestURI != null) {
+                String lowerURI = requestURI.toLowerCase();
+                String contextPath = httpRequest.getContextPath().toLowerCase();
+                String relativePath = lowerURI;
+                if (!contextPath.isEmpty() && lowerURI.startsWith(contextPath)) {
+                    relativePath = lowerURI.substring(contextPath.length());
+                }
+                if (relativePath.startsWith("/assets/mods/") || relativePath.equals("/assets/mods")) {
+                    httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                    return;
+                }
+            }
+        }
+
+        // ========== SEC-FIX: Block Direct JSP Access ==========
+        // Because this filter only intercepts DispatcherType.REQUEST by default,
+        // it blocks direct browser navigation to JSPs but perfectly allows 
+        // RequestDispatcher.forward() and <jsp:include> to render them normally!
+        if (path != null && path.endsWith(".jsp")) {
+            if (!path.equals("/index.jsp") && 
+                !path.equals("/login.jsp") && 
+                !path.equals("/academy.jsp") && 
+                !path.equals("/error403.jsp") && 
+                !path.equals("/error404.jsp")) {
+                
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/ModController");
+                return;
+            }
+        }
 
         // ========== SEC-FIX: Security Headers ==========
         httpResponse.setHeader("X-Content-Type-Options", "nosniff");

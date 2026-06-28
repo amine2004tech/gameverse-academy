@@ -49,13 +49,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const navbar = document.querySelector('.gv-navbar');
         
         if (currentScroll > 50) {
-            navbar.style.height = '60px';
-            navbar.style.background = 'rgba(14, 43, 35, 0.95)';
-            navbar.style.backdropFilter = 'blur(10px)';
+            navbar.classList.add('scrolled');
         } else {
-            navbar.style.height = '70px';
-            navbar.style.background = 'var(--navbar-bg)';
-            navbar.style.backdropFilter = 'none';
+            navbar.classList.remove('scrolled');
         }
         
         lastScroll = currentScroll;

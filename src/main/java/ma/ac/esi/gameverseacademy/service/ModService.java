@@ -18,6 +18,107 @@ import java.util.regex.Pattern;
 
 public class ModService {
 
+    // =========================
+    // PROCESS MOD SUBMISSION (VALIDATION + PERSISTENCE)
+    // =========================
+    public List<String> processModSubmission(ma.ac.esi.gameverseacademy.model.User currentUser, String title, String gameIdParam, String modIdParam, String description, String youtubeUrl, String selectedTagsStr, String imageOrderStr, List<FileUploadEntry> imageParts, FileUploadEntry zipPart, List<String> uploadErrors, String baseUploadPath) {
+        List<String> errors = new ArrayList<>(uploadErrors);
+        
+        // Validate title
+        if (title == null || title.trim().isEmpty()) {
+            errors.add("Title is required.");
+        } else if (title.trim().length() > 100) {
+            errors.add("Title must be 100 characters or less.");
+        }
+
+        // Validate game selection
+        int gameId = 0;
+        try { gameId = Integer.parseInt(gameIdParam); } catch (Exception e) {}
+        if (gameId <= 0) {
+            errors.add("Game selection is required.");
+        }
+
+        int modId = 0;
+        if (modIdParam != null && !modIdParam.isEmpty()) {
+            try { modId = Integer.parseInt(modIdParam); } catch (Exception e) {}
+        }
+
+        if (modId == 0) {
+            List<Mod> userMods = modRepository.getModsByUserId(currentUser.getId());
+            int pendingCount = 0;
+            if (userMods != null) {
+                for (Mod m : userMods) {
+                    if ("PENDING".equalsIgnoreCase(m.getStatus())) {
+                        pendingCount++;
+                    }
+                }
+            }
+            if (pendingCount >= 2) {
+                errors.add("You cannot have more than 2 pending mod submissions at a time.");
+                return errors;
+            }
+
+            if (zipPart == null) {
+                boolean hasModFileError = false;
+                for (String err : errors) {
+                    if (err.contains("mod package") || err.contains("archive") || err.contains("ZIP")) {
+                        hasModFileError = true;
+                        break;
+                    }
+                }
+                if (!hasModFileError) {
+                    errors.add("Mod package (ZIP) is required for new submissions.");
+                }
+            }
+            if (imageParts.isEmpty()) {
+                boolean hasImageError = false;
+                for (String err : errors) {
+                    if (err.contains("Image file")) {
+                        hasImageError = true;
+                        break;
+                    }
+                }
+                if (!hasImageError) {
+                    errors.add("At least one valid image is required for the mod gallery.");
+                }
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            return errors; 
+        }
+
+        // Prepare Mod Object
+        Mod mod = new Mod();
+        mod.setTitle(title.trim());
+        mod.setGameId(gameId);
+        mod.setUserId(currentUser.getId());
+        mod.setDescription(description);
+        mod.setYoutubeVideoId(youtubeUrl);
+
+        List<Integer> tagIds = parseTagIds(selectedTagsStr);
+
+        boolean success;
+        if (modId > 0) {
+            mod.setId(modId);
+            Mod existing = getModById(modId);
+            if (existing != null && existing.getUserId() == currentUser.getId()) {
+                success = updateMod(mod, tagIds, imageParts, zipPart, baseUploadPath, imageOrderStr);
+            } else {
+                errors.add("You are not authorized to update this mod.");
+                return errors;
+            }
+        } else {
+            success = submitMod(mod, tagIds, imageParts, zipPart, baseUploadPath, imageOrderStr) > 0;
+        }
+
+        if (!success) {
+            errors.add("Submission failed. Please check your inputs and try again.");
+        }
+
+        return errors;
+    }
+
     private ModRepository modRepository = new ModRepository();
     private ModImageService modImageService = new ModImageService();
     private ReviewRepository reviewRepository = new ReviewRepository();
@@ -59,11 +160,15 @@ public class ModService {
             double avg = reviewRepository.getAverageRating(mod.getId());
             mod.setAverageRating(avg);
 
-            // Enrich with Thumbnail
-            ModImage thumb = modImageService.getThumbnailByModId(mod.getId());
-            if (thumb != null) {
-                mod.setThumbnail(thumb.getImageName());
+            // Enrich with Thumbnail & All Images
+            java.util.List<ma.ac.esi.gameverseacademy.model.ModImage> images = modImageService.getImagesByModId(mod.getId());
+            mod.setImages(images);
+            if (images != null && !images.isEmpty()) {
+                mod.setThumbnail(images.get(0).getImageName());
             }
+
+            // Enrich with Tags
+            mod.setTags(tagService.getTagsByModId(mod.getId()));
         }
 
         return mods;
@@ -133,10 +238,11 @@ public class ModService {
             // Enrich with Average Rating
             mod.setAverageRating(reviewService.getAverageRating(mod.getId()));
             
-            // Enrich with Thumbnail
-            ModImage thumb = modImageService.getThumbnailByModId(mod.getId());
-            if (thumb != null) {
-                mod.setThumbnail(thumb.getImageName());
+            // Enrich with Thumbnail & All Images
+            java.util.List<ma.ac.esi.gameverseacademy.model.ModImage> images = modImageService.getImagesByModId(mod.getId());
+            mod.setImages(images);
+            if (images != null && !images.isEmpty()) {
+                mod.setThumbnail(images.get(0).getImageName());
             }
 
             // Enrich with Tags
@@ -201,7 +307,7 @@ public class ModService {
     // =========================
     // SUBMIT MOD
     // =========================
-    public int submitMod(Mod mod, List<Integer> tagIds, List<FileUploadEntry> imageParts, FileUploadEntry zipPart, String baseUploadPath) {
+    public int submitMod(Mod mod, List<Integer> tagIds, List<FileUploadEntry> imageParts, FileUploadEntry zipPart, String baseUploadPath, String imageOrderStr) {
         if (!isValidMod(mod)) {
             return -1;
         }
@@ -212,44 +318,119 @@ public class ModService {
         int targetModId = modRepository.insertMod(mod);
         if (targetModId <= 0) return -1;
 
-        // Handle Tags
-        if (tagIds != null && !tagIds.isEmpty()) {
-            tagService.clearAndAddTags(targetModId, tagIds);
-        }
+        // Enrich mod object with generated ID
+        mod.setId(targetModId);
 
-        // Handle Images
-        if (imageParts != null) {
-            int index = 0;
-            for (FileUploadEntry entry : imageParts) {
-                String fileName = targetModId + "_" + index + ".jpg";
-                String fullPath = baseUploadPath + File.separator + "images" + File.separator + "mods";
-                if (saveFile(entry.getInputStream(), fullPath, fileName)) {
-                    ModImage mi = new ModImage();
-                    mi.setModId(targetModId);
-                    mi.setImageName(fileName);
-                    mi.setPosition(index);
-                    modImageService.addImage(mi);
-                    index++;
+        List<File> savedFiles = new ArrayList<>();
+        boolean hasError = false;
+
+        try {
+            // Handle Tags
+            if (tagIds != null && !tagIds.isEmpty()) {
+                tagService.clearAndAddTags(targetModId, tagIds);
+            }
+
+            // Handle Images
+            if (imageParts != null && !imageParts.isEmpty()) {
+                List<Integer> order = new ArrayList<>();
+                if (imageOrderStr != null && !imageOrderStr.isEmpty()) {
+                    for (String s : imageOrderStr.split(",")) {
+                        String token = s.trim();
+                        if (token.startsWith("new:")) {
+                            token = token.substring(4);
+                        } else if (token.startsWith("db:")) {
+                            continue; // new mods shouldn't have db tokens, but just in case
+                        }
+                        try { order.add(Integer.parseInt(token)); } catch (Exception e) {}
+                    }
+                }
+                // Fallback to sequential if order is broken
+                if (order.size() != imageParts.size()) {
+                    order.clear();
+                    for (int i = 0; i < imageParts.size(); i++) order.add(i);
+                }
+
+                for (int pos = 0; pos < order.size(); pos++) {
+                    int partIndex = order.get(pos);
+                    if (partIndex >= 0 && partIndex < imageParts.size()) {
+                        FileUploadEntry entry = imageParts.get(partIndex);
+                        
+                        String ext = "";
+                        String original = entry.getOriginalFileName();
+                        if (original != null && original.contains(".")) {
+                            ext = original.substring(original.lastIndexOf('.'));
+                        }
+                        
+                        String fileName = targetModId + "_" + pos + "_" + System.currentTimeMillis() + ext;
+                        String fullPath = baseUploadPath + File.separator + "images" + File.separator + "mods";
+                        
+                        if (saveFile(entry.getInputStream(), fullPath, fileName)) {
+                            savedFiles.add(new File(fullPath, fileName));
+                            ModImage mi = new ModImage();
+                            mi.setModId(targetModId);
+                            mi.setImageName(fileName);
+                            mi.setPosition(pos); // Set the explicit sort_order
+                            modImageService.addImage(mi);
+                        } else {
+                            hasError = true;
+                            break;
+                        }
+                    }
                 }
             }
-        }
 
-        // Handle Zip File
-        if (zipPart != null) {
-            String physicalName = targetModId + ".zip";
-            String fullPath = baseUploadPath + File.separator + "mods";
-            saveFile(zipPart.getInputStream(), fullPath, physicalName);
-        }
+            // Handle Zip File - Keep original name (prefixed with ID to prevent collisions)
+            if (!hasError && zipPart != null) {
+                String originalName = zipPart.getOriginalFileName();
+                String physicalName = targetModId + "_" + originalName;
+                String fullPath = baseUploadPath + File.separator + "mods";
+                if (saveFile(zipPart.getInputStream(), fullPath, physicalName)) {
+                    savedFiles.add(new File(fullPath, physicalName));
+                    mod.setFileName(physicalName);
+                    modRepository.updateMod(mod);
+                } else {
+                    hasError = true;
+                }
+            }
 
-        return targetModId;
+            if (hasError) {
+                throw new Exception("File persistence failed during mod submission.");
+            }
+
+            return targetModId;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Transaction Rollback
+            for (File f : savedFiles) {
+                if (f.exists()) f.delete();
+            }
+            modRepository.deleteMod(targetModId);
+            return -1;
+        }
     }
 
-    public boolean updateMod(Mod mod, List<Integer> tagIds, List<FileUploadEntry> imageParts, FileUploadEntry zipPart, String baseUploadPath) {
+    public boolean updateMod(Mod mod, List<Integer> tagIds, List<FileUploadEntry> imageParts, FileUploadEntry zipPart, String baseUploadPath, String imageOrderStr) {
         if (mod == null || mod.getId() <= 0 || !isValidMod(mod)) {
             return false;
         }
 
         mod.setYoutubeVideoId(extractYoutubeVideoId(mod.getYoutubeVideoId()));
+
+        // If a new ZIP is uploaded, update filename and set status back to PENDING
+        if (zipPart != null) {
+            String originalName = zipPart.getOriginalFileName();
+            mod.setFileName(mod.getId() + "_" + originalName);
+            mod.setStatus("PENDING");
+            modRepository.updateModStatus(mod.getId(), "PENDING");
+        } else {
+            // Keep the existing file name if no new file is uploaded
+            Mod existing = getModById(mod.getId());
+            if (existing != null) {
+                mod.setFileName(existing.getFileName());
+            }
+        }
+
         boolean updated = modRepository.updateMod(mod);
         if (!updated) return false;
 
@@ -258,26 +439,56 @@ public class ModService {
             tagService.clearAndAddTags(mod.getId(), tagIds);
         }
 
-        // Handle Images (Append new ones)
-        if (imageParts != null) {
-            int nextIndex = modImageService.getImagesByModId(mod.getId()).size();
-            for (FileUploadEntry entry : imageParts) {
-                String fileName = mod.getId() + "_" + nextIndex + ".jpg";
-                String fullPath = baseUploadPath + File.separator + "images" + File.separator + "mods";
-                if (saveFile(entry.getInputStream(), fullPath, fileName)) {
+        // Handle Images (Unified Ordering)
+        if (imageOrderStr != null && !imageOrderStr.isEmpty()) {
+            String[] tokens = imageOrderStr.split(",");
+            modImageService.deleteImagesByModId(mod.getId());
+            
+            int actualPos = 0;
+            for (int i = 0; i < tokens.length; i++) {
+                String token = tokens[i].trim();
+                if (token.startsWith("db:")) {
+                    String imgName = token.substring(3);
                     ModImage mi = new ModImage();
                     mi.setModId(mod.getId());
-                    mi.setImageName(fileName);
-                    mi.setPosition(nextIndex);
+                    mi.setImageName(imgName);
+                    mi.setPosition(actualPos++);
                     modImageService.addImage(mi);
-                    nextIndex++;
+                } else if (token.startsWith("new:")) {
+                    int partIndex = -1;
+                    try { partIndex = Integer.parseInt(token.substring(4)); } catch (Exception e) {}
+                    
+                    if (imageParts != null && partIndex >= 0 && partIndex < imageParts.size()) {
+                        FileUploadEntry entry = imageParts.get(partIndex);
+                        
+                        String ext = "";
+                        String original = entry.getOriginalFileName();
+                        if (original != null && original.contains(".")) {
+                            ext = original.substring(original.lastIndexOf('.'));
+                        }
+                        
+                        String fileName = mod.getId() + "_" + actualPos + "_" + System.currentTimeMillis() + ext;
+                        String fullPath = baseUploadPath + File.separator + "images" + File.separator + "mods";
+                        
+                        if (saveFile(entry.getInputStream(), fullPath, fileName)) {
+                            ModImage mi = new ModImage();
+                            mi.setModId(mod.getId());
+                            mi.setImageName(fileName);
+                            mi.setPosition(actualPos++);
+                            modImageService.addImage(mi);
+                        }
+                    }
                 }
             }
+        } else if (imageOrderStr != null && imageOrderStr.trim().isEmpty()) {
+            // User explicitly removed all images
+            modImageService.deleteImagesByModId(mod.getId());
         }
 
         // Handle Zip File (Overwrite)
         if (zipPart != null) {
-            String physicalName = mod.getId() + ".zip";
+            String originalName = zipPart.getOriginalFileName();
+            String physicalName = mod.getId() + "_" + originalName;
             String fullPath = baseUploadPath + File.separator + "mods";
             saveFile(zipPart.getInputStream(), fullPath, physicalName);
         }
@@ -318,26 +529,7 @@ public class ModService {
         boolean success = modRepository.updateModStatus(modId, "APPROVED");
         if (!success) return false;
 
-        // Handle File Renaming Business Rule
-        String oldFileName = mod.getFileName();
-        if (oldFileName != null && oldFileName.startsWith("pending_")) {
-            String safeTitle = mod.getTitle().trim().toLowerCase().replaceAll("[^a-z0-9]", "_");
-            String newFileName = safeTitle + ".zip";
-            
-            mod.setFileName(newFileName);
-            modRepository.updateMod(mod);
-
-            try {
-                File modDir = new File(baseUploadPath + File.separator + "mods");
-                File oldFile = new File(modDir, oldFileName);
-                if (oldFile.exists()) {
-                    File newFile = new File(modDir, newFileName);
-                    oldFile.renameTo(newFile);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        // Removed: We no longer rename files on approval, we keep the original names!
         return true;
     }
 
@@ -476,6 +668,14 @@ public class ModService {
     }
 
     public File getPhysicalModFile(int modId, String baseUploadPath) {
+        Mod mod = getModById(modId);
+        if (mod != null && mod.getFileName() != null && !mod.getFileName().trim().isEmpty()) {
+            File dbNamedFile = new File(baseUploadPath + File.separator + "mods", mod.getFileName());
+            if (dbNamedFile.exists()) {
+                return dbNamedFile;
+            }
+        }
+        // Fallback to id.zip
         return new File(baseUploadPath + File.separator + "mods", modId + ".zip");
     }
 

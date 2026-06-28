@@ -1,0 +1,40 @@
+========================================================================
+                      GAMEVERSE ACADEMY - DEMO LOGINS
+========================================================================
+
+Below is the list of demo/testing accounts available in the seeded database.
+These credentials are for local manual QA and testing purposes only.
+
+------------------------------------------------------------------------
+1. ADMINISTRATOR ACCOUNT
+   - Role:      ADMIN
+   - Email:     amine@test.com
+   - Username:  Amine
+   - Password:  admin123
+
+2. STANDARD USER ACCOUNT (Player)
+   - Role:      USER
+   - Email:     player1@gmail.com
+   - Username:  playerOneUpdated
+   - Password:  pass123
+
+3. STANDARD USER ACCOUNT (Creator)
+   - Role:      USER
+   - Email:     creator@mods.com
+   - Username:  modCreator
+   - Password:  creator123
+
+4. STANDARD USER ACCOUNT (Ggez)
+   - Role:      USER
+   - Email:     ggez@mail.com
+   - Username:  aminelord
+   - Password:  ggez123
+------------------------------------------------------------------------
+
+REMINDER:
+The easiest way to change account info/password is through the Profile page after login.
+
+========================================================================
+WARNING: Do NOT use these credentials in a production environment. 
+Production must use fresh credentials and secure environment variables.
+========================================================================

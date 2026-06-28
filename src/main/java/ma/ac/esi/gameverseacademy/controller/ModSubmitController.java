@@ -1,14 +1,12 @@
 package ma.ac.esi.gameverseacademy.controller;
 
 import ma.ac.esi.gameverseacademy.model.Mod;
-import ma.ac.esi.gameverseacademy.model.ModImage;
-import ma.ac.esi.gameverseacademy.model.Game;
 import ma.ac.esi.gameverseacademy.model.User;
 import ma.ac.esi.gameverseacademy.service.ModService;
 import ma.ac.esi.gameverseacademy.service.GameService;
 import ma.ac.esi.gameverseacademy.service.TagService;
-import ma.ac.esi.gameverseacademy.service.ModImageService;
 import ma.ac.esi.gameverseacademy.security.SecureUploadService;
+import ma.ac.esi.gameverseacademy.security.InputSanitizer;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -17,19 +15,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @WebServlet("/ModSubmitController")
 @MultipartConfig(
-    fileSizeThreshold = 1024 * 1024 * 2,  // 2MB
-    maxFileSize = 1024 * 1024 * 50,       // 50MB
-    maxRequestSize = 1024 * 1024 * 100    // 100MB
+    fileSizeThreshold = 1024 * 1024 * 5,   // 5MB
+    maxFileSize = 1024 * 1024 * 550L,      // 550MB (Allows for the 500MB Zip)
+    maxRequestSize = 1024 * 1024 * 600L    // 600MB (Zip + Images overhead)
 )
 public class ModSubmitController extends HttpServlet {
 
@@ -70,61 +64,39 @@ public class ModSubmitController extends HttpServlet {
 
         User currentUser = (User) session.getAttribute("user");
         ModService modService = new ModService();
-
-        // 1. Extract Parameters (Basic Validation)
+        // 1. Extract Parameters
         String modIdParam = request.getParameter("modId");
-        String title = request.getParameter("title");
+        String title = InputSanitizer.sanitize(request.getParameter("title"));
         String gameIdParam = request.getParameter("gameId");
-        String description = request.getParameter("description");
-        String youtubeUrl = request.getParameter("youtubeUrl");
+        String description = InputSanitizer.sanitize(request.getParameter("description"));
+        String youtubeUrl = InputSanitizer.sanitize(request.getParameter("youtubeUrl"));
         String selectedTagsStr = request.getParameter("selectedTags");
-
-        int gameId = 0;
-        try { gameId = Integer.parseInt(gameIdParam); } catch (Exception e) {}
-
-        int modId = 0;
-        if (modIdParam != null && !modIdParam.isEmpty()) {
-            try { modId = Integer.parseInt(modIdParam); } catch (Exception e) {}
-        }
-
-        // 2. Prepare Data for Service
-        Mod mod = new Mod();
-        mod.setTitle(title);
-        mod.setGameId(gameId);
-        mod.setUserId(currentUser.getId());
-        mod.setDescription(description);
-        mod.setYoutubeVideoId(youtubeUrl); // Service will extract ID
-
-        List<Integer> tagIds = ModService.parseTagIds(selectedTagsStr);
-
-        // 3. Secure File Extraction (Offloaded to Service Layer)
-        SecureUploadService uploadService = new SecureUploadService();
-        SecureUploadService.UploadPackage uploadPkg = uploadService.processSecureUploads(request.getParts(), mod);
-
-        List<ModService.FileUploadEntry> imageParts = uploadPkg.getImageParts();
-        ModService.FileUploadEntry zipPart = uploadPkg.getZipPart();
-
+        String imageOrderStr = request.getParameter("imageOrder");
         String baseUploadPath = request.getServletContext().getRealPath("/assets");
 
-        // 3. Delegate to Service
-        boolean success;
-        if (modId > 0) {
-            mod.setId(modId);
-            Mod existing = modService.getModById(modId);
-            if (existing != null && existing.getUserId() == currentUser.getId()) {
-                success = modService.updateMod(mod, tagIds, imageParts, zipPart, baseUploadPath);
-            } else {
-                success = false;
-            }
-        } else {
-            success = modService.submitMod(mod, tagIds, imageParts, zipPart, baseUploadPath) > 0;
-        }
+        // 2. Extract File Uploads
+        SecureUploadService uploadService = new SecureUploadService();
+        SecureUploadService.UploadResult uploadResult = uploadService.processSecureUploads(request.getParts());
+
+        // 3. Delegate ALL business logic to the Service Layer
+        List<String> errors = modService.processModSubmission(
+                currentUser, title, gameIdParam, modIdParam, description, youtubeUrl, 
+                selectedTagsStr, imageOrderStr, 
+                uploadResult.getImageParts(), uploadResult.getZipPart(), 
+                uploadResult.getErrors(), baseUploadPath
+        );
 
         // 4. Orchestrate Response
-        if (success) {
-            response.sendRedirect(request.getContextPath() + "/ModSubmitController?success=1");
+        if (!errors.isEmpty()) {
+            StringBuilder errorMsg = new StringBuilder();
+            for (int i = 0; i < errors.size(); i++) {
+                if (i > 0) errorMsg.append("|");
+                errorMsg.append(errors.get(i));
+            }
+            response.sendRedirect(request.getContextPath() + "/ModSubmitController?error=" 
+                + java.net.URLEncoder.encode(errorMsg.toString(), "UTF-8"));
         } else {
-            response.sendRedirect(request.getContextPath() + "/ModSubmitController?error=1");
+            response.sendRedirect(request.getContextPath() + "/ModSubmitController?success=1");
         }
     }
-}
+}

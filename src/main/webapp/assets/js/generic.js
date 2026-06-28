@@ -85,6 +85,7 @@ function initAvatarSelector() {
                 
                 const img = document.createElement('img');
                 const imgPath = `${contextPath}/assets/images/avatars_default/${color}/${i}.png`;
+                const relativePath = `assets/images/avatars_default/${color}/${i}.png`;
                 
                 img.src = imgPath;
                 img.alt = `Avatar ${i}`;
@@ -95,7 +96,7 @@ function initAvatarSelector() {
                 
                 imgContainer.addEventListener('click', () => {
                     avatarTrigger.src = imgPath;
-                    if (avatarInput) avatarInput.value = imgPath;
+                    if (avatarInput) avatarInput.value = relativePath;
                     closeModal('avatarModal');
                     const avatarForm = document.getElementById('avatarUpdateForm');
                     if (avatarForm) avatarForm.submit();
@@ -132,5 +133,58 @@ function initAvatarSelector() {
         
         observer.observe(avatarModal, { attributes: true, attributeFilter: ['class'] });
     }
+}
+
+/**
+ * Global Cinematic Toast Notification System
+ * @param {string} title - Title of the toast
+ * @param {string} message - Message body
+ * @param {string} type - 'error', 'success', 'info', 'warning'
+ */
+function showToast(title, message, type = 'info') {
+    let container = document.getElementById('gv-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'gv-toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `gv-toast ${type}`;
+
+    const content = document.createElement('div');
+    content.className = 'gv-toast-content';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'gv-toast-title';
+    titleEl.innerText = title;
+
+    const messageEl = document.createElement('div');
+    messageEl.className = 'gv-toast-message';
+    messageEl.innerHTML = message;
+
+    content.appendChild(titleEl);
+    content.appendChild(messageEl);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'gv-toast-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = () => {
+        toast.classList.add('closing');
+        setTimeout(() => toast.remove(), 300);
+    };
+
+    toast.appendChild(content);
+    toast.appendChild(closeBtn);
+
+    container.appendChild(toast);
+
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        if (document.body.contains(toast)) {
+            toast.classList.add('closing');
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, 5000);
 }
 

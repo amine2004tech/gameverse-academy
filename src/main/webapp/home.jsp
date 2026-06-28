@@ -1,11 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page import="java.util.List, ma.ac.esi.gameverseacademy.model.*" %>
 
 <%
     String ctx = request.getContextPath();
     User currentUser = (session != null) ? (User) session.getAttribute("user") : null;
+    if (request.getAttribute("mods") == null) {
+        response.sendRedirect(ctx + "/ModController");
+        return;
+    }
 %>
 
 <!DOCTYPE html>
@@ -84,9 +89,9 @@
                         <a href="#" class="game-card ${selectedGame == game.id ? 'active' : ''}" 
                            data-game-id="${game.id}" 
                            id="game-${game.id}">
-                            <img src="<%=ctx%>/assets/images/games/${game.id}.jpg" alt="${game.title}" onerror="this.src='<%=ctx%>/assets/images/games/default.jpg'">
+                            <img src="<%=ctx%>/assets/images/games/${game.id}.jpg" alt="${fn:escapeXml(game.title)}" onerror="this.src='<%=ctx%>/assets/images/games/default.jpg'">
                             <div class="game-card-overlay">
-                                <span class="game-title">${game.title}</span>
+                                <span class="game-title">${fn:escapeXml(game.title)}</span>
                             </div>
                         </a>
                     </c:forEach>
@@ -109,11 +114,11 @@
                         <c:forEach var="item" items="${mods}">
                             <a href="<%=ctx%>/ModDetailsController?id=${item.id}" class="mod-card" id="mod-${item.id}">
                                 <div class="mod-thumbnail-box">
-                                    <img src="<%=ctx%>/assets/images/mods/${item.id}_0.jpg" alt="${item.title}" onerror="this.src='<%=ctx%>/assets/images/mods/default.jpg'">
+                                    <img src="<%=ctx%>/assets/images/mods/${item.id}_0.jpg" alt="${fn:escapeXml(item.title)}" onerror="this.src='${pageContext.request.contextPath}/assets/images/mods/default_mod.png'">
                                     <div class="mod-thumbnail-overlay"></div>
                                 </div>
                                 <div class="mod-info-box">
-                                    <h3 class="mod-card-title">${item.title}</h3>
+                                    <h3 class="mod-card-title">${fn:escapeXml(item.title)}</h3>
                                     
                                     <div class="creator-block">
                                         <c:set var="authorAv" value="${item.authorAvatar}" />
@@ -162,7 +167,7 @@
                                                 <div class="star-layer empty"></div>
                                                 <div class="star-layer filled"></div>
                                             </div>
-                                            <span class="rating-double">${item.averageRating}</span>
+                                            <span class="rating-double"><fmt:formatNumber value="${item.averageRating}" pattern="0.0" /></span>
                                         </div>
                                     </div>
                                 </div>

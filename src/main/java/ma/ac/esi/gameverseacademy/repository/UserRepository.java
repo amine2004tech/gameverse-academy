@@ -19,7 +19,7 @@ public class UserRepository {
             String password) {
 
         // SEC-FIX: Fetch user by login only, verify password with hasher
-        String sql = "SELECT id, login, password, role, username, avatar " +
+        String sql = "SELECT id, login, password_hash, role, username, avatar " +
                 "FROM users " +
                 "WHERE login = ?";
 
@@ -52,7 +52,7 @@ public class UserRepository {
 
     public User getUserById(int userId) {
 
-        String sql = "SELECT id, login, password, role, username, avatar " +
+        String sql = "SELECT id, login, password_hash, role, username, avatar " +
                 "FROM users " +
                 "WHERE id = ?";
 
@@ -96,6 +96,52 @@ public class UserRepository {
             e.printStackTrace();
         }
 
+        return false;
+    }
+
+    // =========================
+    // CHECK EMAIL EXISTS
+    // =========================
+
+    public boolean emailExists(String email) {
+        String sql = "SELECT id FROM users WHERE login = ?";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // =========================
+    // REGISTER USER
+    // =========================
+
+    public boolean registerUser(User user) {
+        String hashedPassword = PasswordHasher.hashPassword(user.getPassword());
+        String salt = "";
+        String[] parts = hashedPassword.split("\\$");
+        if (parts.length == 4) {
+            salt = parts[2];
+        }
+
+        String sql = "INSERT INTO users (login, username, password_hash, salt, role, avatar) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, user.getLogin());
+            stmt.setString(2, user.getUsername());
+            stmt.setString(3, hashedPassword);
+            stmt.setString(4, salt);
+            stmt.setString(5, user.getRole() != null ? user.getRole() : "USER");
+            stmt.setString(6, user.getAvatar() != null ? user.getAvatar() : "assets/images/avatars_default/blue/1.png");
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("[UserRepository] Register user error: " + e.getMessage());
+        }
         return false;
     }
 
@@ -156,13 +202,19 @@ public class UserRepository {
 
         // SEC-FIX: Hash password before storing
         String hashedPassword = PasswordHasher.hashPassword(newPassword);
-        String sql = "UPDATE users SET password = ? WHERE id = ?";
+        String salt = "";
+        String[] parts = hashedPassword.split("\\$");
+        if (parts.length == 4) {
+            salt = parts[2];
+        }
+        String sql = "UPDATE users SET password_hash = ?, salt = ? WHERE id = ?";
 
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, hashedPassword);
-            stmt.setInt(2, userId);
+            stmt.setString(2, salt);
+            stmt.setInt(3, userId);
 
             return stmt.executeUpdate() > 0;
 
@@ -208,7 +260,7 @@ public class UserRepository {
 
         user.setId(rs.getInt("id"));
         user.setLogin(rs.getString("login"));
-        user.setPassword(rs.getString("password"));
+        user.setPassword(rs.getString("password_hash"));
         user.setRole(rs.getString("role"));
         user.setUsername(rs.getString("username"));
         user.setAvatar(rs.getString("avatar"));

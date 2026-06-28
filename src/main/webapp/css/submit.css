@@ -306,12 +306,14 @@ body {
 }
 
 .mod-mini-tag {
-    font-size: 0.65rem;
-    padding: 3px 8px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--tag-color);
-    color: var(--tag-color);
-    clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+    padding: 2px 8px;
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: rgba(var(--tag-rgb), 0.15);
+    color: rgb(var(--tag-rgb));
+    border: 1px solid rgba(var(--tag-rgb), 0.3);
+    clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
 }
 
 .mod-card-footer {
@@ -515,9 +517,9 @@ body {
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: var(--text-muted);
+    background: rgba(var(--tag-rgb), 0.1);
+    border: 1px solid rgba(var(--tag-rgb), 0.3);
+    color: rgb(var(--tag-rgb));
     clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
     cursor: pointer;
     transition: var(--transition);
@@ -525,15 +527,15 @@ body {
 }
 
 .tag-selector-item:hover {
-    border-color: var(--tag-color);
+    background: rgba(var(--tag-rgb), 0.2);
+    box-shadow: 0 0 10px rgba(var(--tag-rgb), 0.2);
 }
 
 .tag-selector-item.active {
-    background: rgba(255,255,255,0.1);
-    border-color: var(--tag-color);
-    color: var(--tag-color);
-    box-shadow: 0 0 15px rgba(255,255,255,0.1);
-    text-shadow: 0 0 5px var(--tag-color);
+    background: rgb(var(--tag-rgb));
+    color: var(--bg-dark-primary);
+    box-shadow: 0 0 15px rgba(var(--tag-rgb), 0.4);
+    text-shadow: none;
 }
 
 /* Form Row Split */
@@ -727,20 +729,19 @@ body.light-mode .tags-selector-grid {
 }
 
 body.light-mode .tag-selector-item {
-    background: transparent;
-    border-color: rgba(14, 43, 35, 0.2);
-    color: rgba(14, 43, 35, 0.6);
+    background: rgba(var(--tag-rgb), 0.15);
+    border-color: rgba(var(--tag-rgb), 0.4);
+    color: rgb(var(--tag-rgb));
 }
 
 body.light-mode .tag-selector-item:hover {
-    border-color: var(--tag-color);
-    color: var(--tag-color);
+    background: rgba(var(--tag-rgb), 0.25);
+    box-shadow: 0 0 10px rgba(var(--tag-rgb), 0.2);
 }
 
 body.light-mode .tag-selector-item.active {
-    background: var(--tag-color);
+    background: rgb(var(--tag-rgb));
     color: #edf2c3;
-    border-color: var(--tag-color);
     text-shadow: none;
 }
 
@@ -770,4 +771,47 @@ body.light-mode .star-layer.empty {
 body.light-mode .star-layer.filled {
     background-image: url('../assets/images/icons/avg rating star  filled light mode.png');
     filter: none;
+}
+
+/* Uploading Progress Styles */
+.mod-card.uploading .mod-thumbnail {
+    filter: grayscale(100%) blur(2px) brightness(0.6);
+    transition: filter 0.3s ease;
+}
+
+.mod-card.uploading .mod-thumbnail-wrapper {
+    position: relative;
+}
+
+.upload-progress-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(14, 43, 35, 0.4);
+    z-index: 5;
+    animation: pulseFog 2s infinite ease-in-out;
+    pointer-events: none;
+}
+
+.upload-progress-bar-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    z-index: 10;
+}
+
+.upload-progress-bar {
+    height: 100%;
+    background: var(--accent-primary);
+    width: 0%;
+    transition: width 0.2s ease-out;
+    box-shadow: 0 0 10px var(--accent-primary);
+}
+
+@keyframes pulseFog {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
 }

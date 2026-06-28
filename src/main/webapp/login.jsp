@@ -1,4 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
     <!DOCTYPE html>
     <html lang="en">
 
@@ -23,12 +25,20 @@
             <h1 class="login-logo">GameVerse <span>Academy</span></h1>
             <p class="login-subtitle">ACCESS YOUR MODDING DASHBOARD</p>
 
-            <% if (request.getParameter("error") !=null) { %>
-                <div
-                    style="background: rgba(255, 71, 87, 0.1); border: 1px solid #ff4757; color: #ff4757; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 0.85rem;">
-                    Invalid identifier or access code. Please try again.
-                </div>
-                <% } %>
+            <c:if test="${not empty param.error}">
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        showToast("Authentication Failed", "Invalid identifier or access code. Please try again.", "error");
+                    });
+                </script>
+            </c:if>
+            <c:if test="${not empty param.success}">
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        showToast("Success", "${fn:escapeXml(param.success)}", "success");
+                    });
+                </script>
+            </c:if>
 
                     <form action="${pageContext.request.contextPath}/LoginController" method="post">
                         <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
@@ -56,13 +66,14 @@
                         <button type="submit" class="btn-futuristic login-btn">INITIALIZE LOGIN</button>
 
                         <div class="register-link">
-                            New to the academy? <a href="#">Create a profile</a>
+                            New to the academy? <a href="${pageContext.request.contextPath}/register">Create a profile</a>
                         </div>
 
                     </form>
 
         </div>
 
+    <script src="${pageContext.request.contextPath}/assets/js/generic.js"></script>
     </body>
 
     </html>

@@ -18,7 +18,7 @@
     <!-- Navbar Assets -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Vinque Font placeholder - assuming it's available in global CSS or provided here -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/navbar.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/navbar.css?v=3">
     
     <nav class="gv-navbar-wrapper">
         <div class="gv-navbar">
@@ -83,5 +83,5 @@
         </div>
     </nav>
 
-    <script src="${pageContext.request.contextPath}/js/navbar.js"></script>
+    <script src="${pageContext.request.contextPath}/js/navbar.js?v=3"></script>
 </c:if>

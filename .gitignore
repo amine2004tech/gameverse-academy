@@ -57,3 +57,29 @@ tmp/
 *.tmp
 *.bak
 ~*
+
+# Migration utility files
+src/main/java/ma/ac/esi/gameverseacademy/util/MigrateUsers.java
+src/main/java/ma/ac/esi/gameverseacademy/util/DatabaseMigrator.java
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+application-local.properties
+application-dev.properties
+
+# Executables
+*.exe
+*.jar
+*.war
+
+# Frontend dependencies & cache
+node_modules/
+dist/
+.cache/
+
+# Documentation
+*.md
+!README.md
+!SETUP_GUIDE.md

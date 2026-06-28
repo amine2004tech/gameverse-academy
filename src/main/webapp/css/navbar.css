@@ -290,3 +290,47 @@ body.light-mode .theme-switch {
 body.light-mode .gv-btn:hover {
     color: #ffffff;
 }
+
+/* Scrolled Navbar Styles */
+.gv-navbar.scrolled {
+    height: 60px;
+    background: rgba(14, 43, 35, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+/* When scrolled in light mode, the background is dark so text must be light */
+body.light-mode .gv-navbar.scrolled .logo,
+body.light-mode .gv-navbar.scrolled .nav-link {
+    color: #edf2c3;
+}
+
+body.light-mode .gv-navbar.scrolled .logo {
+    text-shadow: 0 0 15px rgba(92, 255, 176, 0.4);
+}
+
+body.light-mode .gv-navbar.scrolled .nav-link:hover {
+    color: #5cffb0;
+    font-weight: 500;
+}
+
+body.light-mode .gv-navbar.scrolled .gv-btn {
+    border-color: #5cffb0;
+    color: #5cffb0;
+}
+
+body.light-mode .gv-navbar.scrolled .gv-btn:hover {
+    background: #5cffb0;
+    color: #0e2b23;
+}
+
+body.light-mode .gv-navbar.scrolled .gv-avatar {
+    border-color: #5cffb0;
+}
+
+body.light-mode .gv-navbar.scrolled .theme-switch::before {
+    background: #5cffb0;
+}
+
+body.light-mode .gv-navbar.scrolled .gv-mobile-toggle span {
+    background: #5cffb0;
+}

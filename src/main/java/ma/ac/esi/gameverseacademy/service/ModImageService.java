@@ -40,4 +40,9 @@ public class ModImageService {
 
         return modImageRepository.addImage(image);
     }
+
+    public boolean deleteImagesByModId(int modId) {
+        if (modId <= 0) return false;
+        return modImageRepository.deleteImagesByModId(modId);
+    }
 }

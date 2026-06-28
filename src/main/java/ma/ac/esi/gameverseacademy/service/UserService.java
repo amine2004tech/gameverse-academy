@@ -19,9 +19,18 @@ public class UserService {
     public User getUserByCredentials(String login,
             String password) {
 
-        return userRepository.getUserByCredentials(
+        User user = userRepository.getUserByCredentials(
                 login,
                 password);
+                
+        // Lazy migration to new PBKDF2 hash
+        if (user != null && !PasswordHasher.isHashedPassword(user.getPassword())) {
+            System.out.println("[Migration] Upgrading password for user: " + user.getLogin());
+            userRepository.updatePassword(user.getId(), password);
+            user.setPassword(PasswordHasher.hashPassword(password));
+        }
+        
+        return user;
     }
 
     public boolean findUserByCredentials(String login,
@@ -30,6 +39,25 @@ public class UserService {
         return getUserByCredentials(
                 login,
                 password) != null;
+    }
+
+    // =========================
+    // REGISTRATION / VALIDATION
+    // =========================
+    
+    public boolean registerUser(User user) {
+        if (user == null) return false;
+        return userRepository.registerUser(user);
+    }
+    
+    public boolean usernameExists(String username) {
+        if (username == null || username.trim().isEmpty()) return false;
+        return userRepository.usernameExists(username.trim());
+    }
+    
+    public boolean emailExists(String email) {
+        if (email == null || email.trim().isEmpty()) return false;
+        return userRepository.emailExists(email.trim().toLowerCase());
     }
 
     // =========================

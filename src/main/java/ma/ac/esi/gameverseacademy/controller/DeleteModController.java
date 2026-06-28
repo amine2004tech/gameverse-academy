@@ -33,11 +33,12 @@ public class DeleteModController extends HttpServlet {
                 int modId = Integer.parseInt(idParam);
                 ModService modService = new ModService();
                 modService.deleteMod(modId, currentUser);
-            } catch (NumberFormatException e) { /* ignore bad input */ }
+            } catch (NumberFormatException e) {
+                /* ignore bad input */ }
         }
 
         // SEC-FIX: Removed open redirect via untrusted Referer header
-        response.sendRedirect(request.getContextPath() + "/ModController");
+        response.sendRedirect(request.getContextPath() + "/ProfileController");
     }
 
     // SEC-FIX: Reject GET requests for state-changing action

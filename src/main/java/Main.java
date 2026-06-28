@@ -9,73 +9,111 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         Tomcat tomcat = new Tomcat();
-        
+
         // Support dynamic port for deployment (e.g., Railway, Heroku)
         String webPort = System.getenv("PORT");
         if (webPort == null || webPort.isEmpty()) {
             webPort = "8080";
         }
         tomcat.setPort(Integer.parseInt(webPort));
-        
+
         tomcat.getConnector();
+
+        File dbDir = new File("data");
+        if (!dbDir.exists()) dbDir.mkdirs();
+        File dbFile = new File(dbDir, "gameverse.db");
+        if (!dbFile.exists()) {
+            try (java.io.InputStream is = Main.class.getResourceAsStream("/gameverse.db")) {
+                if (is != null) {
+                    java.nio.file.Files.copy(is, dbFile.toPath());
+                    System.out.println("[Main] Extracted seeded database to " + dbFile.getAbsolutePath());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         String webappDir = new File("webapp").getAbsolutePath();
         if (!new File(webappDir).exists()) {
             webappDir = new File("src/main/webapp").getAbsolutePath();
+            if (!new File(webappDir).exists()) {
+                webappDir = System.getProperty("java.io.tmpdir");
+            }
         }
-        
+
         Context ctx = tomcat.addWebapp("/gameverseacademy", webappDir);
         ctx.setParentClassLoader(Main.class.getClassLoader());
 
         // External Resource Mapping for Portable Version
-        // This allows assets/ and uploads/ folders at the root to be served as /assets and /uploads
+        // This allows assets/ and uploads/ folders at the root to be served as /assets
+        // and /uploads
         File externalAssets = new File("assets");
         if (externalAssets.exists()) {
             org.apache.catalina.WebResourceRoot resources = new org.apache.catalina.webresources.StandardRoot(ctx);
-            resources.addPreResources(new org.apache.catalina.webresources.DirResourceSet(resources, "/assets", externalAssets.getAbsolutePath(), "/"));
+            resources.addPreResources(new org.apache.catalina.webresources.DirResourceSet(resources, "/assets",
+                    externalAssets.getAbsolutePath(), "/"));
             ctx.setResources(resources);
             System.out.println("[Main] Mapped external assets from: " + externalAssets.getAbsolutePath());
         }
 
+        // Register SecurityFilter
+        org.apache.tomcat.util.descriptor.web.FilterDef filterDef = new org.apache.tomcat.util.descriptor.web.FilterDef();
+        filterDef.setFilterName("SecurityFilter");
+        filterDef.setFilterClass("ma.ac.esi.gameverseacademy.security.SecurityFilter");
+        ctx.addFilterDef(filterDef);
+
+        org.apache.tomcat.util.descriptor.web.FilterMap filterMap = new org.apache.tomcat.util.descriptor.web.FilterMap();
+        filterMap.setFilterName("SecurityFilter");
+        filterMap.addURLPatternDecoded("/*");
+        ctx.addFilterMap(filterMap);
+
         // Register ALL servlets
-        Tomcat.addServlet(ctx, "ProfileController",      new ProfileController()).setLoadOnStartup(1);
-        Tomcat.addServlet(ctx, "LoginController",        new LoginController()).setLoadOnStartup(1);
-        Tomcat.addServlet(ctx, "LogoutController",       new LogoutController()).setLoadOnStartup(1);
-        Tomcat.addServlet(ctx, "ModController",          new ModController()).setLoadOnStartup(1);
-        Tomcat.addServlet(ctx, "ModDetailsController",   new ModDetailsController()).setLoadOnStartup(1);
-        org.apache.catalina.Wrapper modSubmit = Tomcat.addServlet(ctx, "ModSubmitController", new ModSubmitController());
+        Tomcat.addServlet(ctx, "ProfileController", new ProfileController()).setLoadOnStartup(1);
+        Tomcat.addServlet(ctx, "LoginController", new LoginController()).setLoadOnStartup(1);
+        Tomcat.addServlet(ctx, "LogoutController", new LogoutController()).setLoadOnStartup(1);
+        Tomcat.addServlet(ctx, "ModController", new ModController()).setLoadOnStartup(1);
+        Tomcat.addServlet(ctx, "ModDetailsController", new ModDetailsController()).setLoadOnStartup(1);
+        org.apache.catalina.Wrapper modSubmit = Tomcat.addServlet(ctx, "ModSubmitController",
+                new ModSubmitController());
         modSubmit.setLoadOnStartup(1);
-        modSubmit.setMultipartConfigElement(new javax.servlet.MultipartConfigElement(System.getProperty("java.io.tmpdir"), 1024 * 1024 * 50, 1024 * 1024 * 100, 1024 * 1024 * 2));
-        Tomcat.addServlet(ctx, "ReviewController",       new ReviewController()).setLoadOnStartup(1);
+        modSubmit.setMultipartConfigElement(new javax.servlet.MultipartConfigElement(
+                System.getProperty("java.io.tmpdir"), 1024L * 1024L * 500L, 1024L * 1024L * 550L, 1024 * 1024 * 2));
+        Tomcat.addServlet(ctx, "ReviewController", new ReviewController()).setLoadOnStartup(1);
         Tomcat.addServlet(ctx, "UpdateReviewController", new UpdateReviewController()).setLoadOnStartup(1);
         Tomcat.addServlet(ctx, "DeleteReviewController", new DeleteReviewController()).setLoadOnStartup(1);
-        Tomcat.addServlet(ctx, "DeleteModController",    new DeleteModController()).setLoadOnStartup(1);
-        Tomcat.addServlet(ctx, "DownloadModController",  new DownloadController()).setLoadOnStartup(1);
-        Tomcat.addServlet(ctx, "AdminController",        new AdminController()).setLoadOnStartup(1);
+        Tomcat.addServlet(ctx, "DeleteModController", new DeleteModController()).setLoadOnStartup(1);
+        Tomcat.addServlet(ctx, "DownloadModController", new DownloadController()).setLoadOnStartup(1);
+        Tomcat.addServlet(ctx, "AdminController", new AdminController()).setLoadOnStartup(1);
+        Tomcat.addServlet(ctx, "RegisterController", new RegisterController()).setLoadOnStartup(1);
 
-        ctx.addServletMappingDecoded("/ProfileController",      "ProfileController");
-        ctx.addServletMappingDecoded("/LoginController",        "LoginController");
-        ctx.addServletMappingDecoded("/LogoutController",       "LogoutController");
-        ctx.addServletMappingDecoded("/ModController",          "ModController");
-        ctx.addServletMappingDecoded("/ModDetailsController",   "ModDetailsController");
-        ctx.addServletMappingDecoded("/ModSubmitController",    "ModSubmitController");
-        ctx.addServletMappingDecoded("/DeleteModController",    "DeleteModController");
-        ctx.addServletMappingDecoded("/ReviewController",       "ReviewController");
+        ctx.addServletMappingDecoded("/ProfileController", "ProfileController");
+        ctx.addServletMappingDecoded("/LoginController", "LoginController");
+        ctx.addServletMappingDecoded("/LogoutController", "LogoutController");
+        ctx.addServletMappingDecoded("/ModController", "ModController");
+        ctx.addServletMappingDecoded("/ModDetailsController", "ModDetailsController");
+        ctx.addServletMappingDecoded("/ModSubmitController", "ModSubmitController");
+        ctx.addServletMappingDecoded("/DeleteModController", "DeleteModController");
+        ctx.addServletMappingDecoded("/ReviewController", "ReviewController");
         ctx.addServletMappingDecoded("/UpdateReviewController", "UpdateReviewController");
         ctx.addServletMappingDecoded("/DeleteReviewController", "DeleteReviewController");
-        ctx.addServletMappingDecoded("/DownloadModController",  "DownloadModController");
-        ctx.addServletMappingDecoded("/AdminController",        "AdminController");
+        ctx.addServletMappingDecoded("/DownloadModController", "DownloadModController");
+        ctx.addServletMappingDecoded("/AdminController", "AdminController");
+        ctx.addServletMappingDecoded("/register", "RegisterController");
 
         tomcat.start();
         System.out.println("=============================================");
         System.out.println("  GameVerse Academy RUNNING on port " + webPort);
         System.out.println("=============================================");
         System.out.println(">>> http://localhost:" + webPort + "/gameverseacademy/ModDetailsController?id=5");
-        System.out.println(">>> http://localhost:" + webPort + "/gameverseacademy/mods.jsp");
+        System.out.println(">>> http://localhost:" + webPort + "/gameverseacademy");
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try { tomcat.stop(); tomcat.destroy(); }
-            catch (Exception e) { e.printStackTrace(); }
+            try {
+                tomcat.stop();
+                tomcat.destroy();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }));
 
         tomcat.getServer().await();

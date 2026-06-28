@@ -46,7 +46,8 @@ public class ModImageRepository {
 
         String sql =
                 "SELECT * FROM mod_images " +
-                "WHERE mod_id = ? AND position = 0 " +
+                "WHERE mod_id = ? " +
+                "ORDER BY position ASC " +
                 "LIMIT 1";
 
         try (Connection conn = DBUtil.getConnection();
@@ -85,6 +86,19 @@ public class ModImageRepository {
 
             return stmt.executeUpdate() > 0;
 
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // DELETE IMAGES BY MOD ID (Used for complete reordering)
+    public boolean deleteImagesByModId(int modId) {
+        String sql = "DELETE FROM mod_images WHERE mod_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, modId);
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

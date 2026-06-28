@@ -416,3 +416,442 @@ body.light-mode .tag {
 body.light-mode .empty-state {
     background: rgba(14, 43, 35, 0.03);
 }
+
+/* ==========================================================================
+   GAMEVERSE TOAST NOTIFICATION SYSTEM
+   ========================================================================== */
+#gv-toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.gv-toast {
+    background: rgba(15, 20, 25, 0.95);
+    backdrop-filter: blur(10px);
+    border-left: 4px solid var(--accent-light);
+    border-radius: 8px;
+    padding: 16px 20px;
+    color: #fff;
+    min-width: 300px;
+    max-width: 450px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 10px rgba(92, 255, 176, 0.1);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    pointer-events: auto;
+    font-family: var(--font-body);
+}
+
+.gv-toast.error {
+    border-left-color: #ff3c3c;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 10px rgba(255, 60, 60, 0.15);
+}
+
+.gv-toast.success {
+    border-left-color: #5cffb0;
+}
+
+.gv-toast-content {
+    flex-grow: 1;
+}
+
+.gv-toast-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+}
+
+.gv-toast.error .gv-toast-title { color: #ff6b6b; }
+.gv-toast.success .gv-toast-title { color: #5cffb0; }
+
+.gv-toast-message {
+    font-size: 0.95rem;
+    color: #ccc;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.gv-toast-close {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 24px;
+    cursor: pointer;
+    margin-left: 15px;
+    transition: color 0.2s;
+    line-height: 1;
+    padding: 0;
+}
+
+.gv-toast-close:hover {
+    color: #fff;
+    text-shadow: 0 0 8px #fff;
+}
+
+.gv-toast.closing {
+    animation: fadeOutRight 0.3s forwards;
+}
+
+    margin-bottom: 8px;
+    color: var(--support-light);
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.futuristic-input {
+    width: 100%;
+    background: rgba(15, 6, 9, 0.5);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 12px;
+    font-family: var(--font-body);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.futuristic-input:focus {
+    border-color: var(--accent-light);
+    box-shadow: 0 0 10px rgba(92, 255, 176, 0.2);
+}
+
+/* Proportional Star Rating (from Mod Details) */
+.avg-star-wrap {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+}
+
+.avg-star-wrap img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.avg-star-empty {
+    z-index: 1;
+    opacity: 0.3;
+}
+
+.avg-star-filled-clip {
+    z-index: 2;
+    /* clip-path will be set inline based on rating */
+}
+
+.mod-rating-inline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rating-number {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    color: var(--accent-light);
+    line-height: 1;
+}
+/* Global Light Mode Support */
+body.light-mode {
+    background-color: #edf2c3;
+    background-image: none;
+    color: #0e2b23;
+    --bg-dark: #edf2c3;
+    --card-bg: #d1f5be;
+    --accent-light: #0e2b23;
+    --text-main: #0e2b23;
+    --text-muted: rgba(14, 43, 35, 0.6);
+    --border-color: rgba(14, 43, 35, 0.15);
+}
+
+body.light-mode h1, 
+body.light-mode h2, 
+body.light-mode h3, 
+body.light-mode h4, 
+body.light-mode h5, 
+body.light-mode h6 {
+    color: #0e2b23;
+}
+
+body.light-mode .futuristic-card {
+    background-color: #d1f5be;
+    border-color: rgba(14, 43, 35, 0.1);
+}
+
+body.light-mode .btn-futuristic {
+    background-color: #0e2b23;
+    color: #ffffff;
+    border-color: #0e2b23;
+}
+
+body.light-mode .btn-futuristic:hover {
+    background-color: #1a4a3e;
+    color: #ffffff;
+}
+
+body.light-mode .tag {
+    background: rgba(14, 43, 35, 0.05);
+    border-color: rgba(14, 43, 35, 0.15);
+    color: #0e2b23;
+}
+
+body.light-mode .empty-state {
+    background: rgba(14, 43, 35, 0.03);
+}
+
+/* ==========================================================================
+   GAMEVERSE TOAST NOTIFICATION SYSTEM
+   ========================================================================== */
+#gv-toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.gv-toast {
+    background: rgba(15, 20, 25, 0.95);
+    backdrop-filter: blur(10px);
+    border-left: 4px solid var(--accent-light);
+    border-radius: 0;
+    padding: 16px 20px;
+    color: #fff;
+    min-width: 300px;
+    max-width: 450px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 10px rgba(92, 255, 176, 0.1);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    pointer-events: auto;
+    font-family: var(--font-body);
+}
+
+.gv-toast.error {
+    border-left-color: #ff3c3c;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 10px rgba(255, 60, 60, 0.15);
+}
+
+.gv-toast.success {
+    border-left-color: #5cffb0;
+}
+
+.gv-toast-content {
+    flex-grow: 1;
+}
+
+.gv-toast-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+}
+
+.gv-toast.error .gv-toast-title { color: #ff6b6b; }
+.gv-toast.success .gv-toast-title { color: #5cffb0; }
+
+.gv-toast-message {
+    font-size: 0.95rem;
+    color: #ccc;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.gv-toast-close {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 24px;
+    cursor: pointer;
+    margin-left: 15px;
+    transition: color 0.2s;
+    line-height: 1;
+    padding: 0;
+}
+
+.gv-toast-close:hover {
+    color: #fff;
+    text-shadow: 0 0 8px #fff;
+}
+
+.gv-toast.closing {
+    animation: fadeOutRight 0.3s forwards;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(120%); opacity: 0; }
+}
+
+/* ==========================================================================
+   GAMEVERSE HORIZONTAL IMAGE SLIDER
+   ========================================================================== */
+.gv-image-slider {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 120px;
+    align-items: center;
+    padding: 10px 15px;
+    background: rgba(15, 6, 9, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: 0;
+    clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-light) rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.gv-image-slider::-webkit-scrollbar {
+    height: 6px;
+}
+.gv-image-slider::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.3);
+}
+.gv-image-slider::-webkit-scrollbar-thumb {
+    background: var(--accent-light);
+}
+
+.gv-slider-empty {
+    width: 100%;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-family: var(--font-body);
+    font-style: italic;
+    opacity: 0.7;
+}
+
+.gv-slider-card {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    border-radius: 0;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    flex-shrink: 0;
+    overflow: hidden;
+    background: #111;
+    cursor: grab;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s, border-color 0.3s;
+    border: 2px solid rgba(255,255,255,0.1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+}
+
+.gv-slider-card:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.8), 0 0 10px rgba(92, 255, 176, 0.2);
+    border-color: rgba(255,255,255,0.3);
+}
+
+.gv-slider-card:active {
+    cursor: grabbing;
+}
+
+.gv-slider-card img.preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.gv-slider-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+    box-shadow: 0 0 20px var(--accent-light);
+    border-color: var(--accent-light);
+}
+
+.gv-slider-card.drag-over {
+    transform: scale(1.1);
+    border-color: var(--support-light);
+    box-shadow: 0 0 15px var(--support-light);
+}
+
+.gv-slider-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 6, 9, 0.85);
+    padding: 4px;
+    gap: 5px;
+    border-top: 1px solid var(--accent-light);
+    backdrop-filter: blur(2px);
+    z-index: 2;
+}
+
+.gv-slider-badge img {
+    width: 14px;
+    height: 14px;
+}
+
+.gv-slider-badge span {
+    color: var(--accent-light);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+    letter-spacing: 0.5px;
+}
+
+.gv-slider-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(15, 6, 9, 0.8);
+    color: var(--text-muted);
+    width: 22px;
+    height: 22px;
+    border-radius: 0;
+    border: 1px solid rgba(255,255,255,0.2);
+    text-align: center;
+    line-height: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 10;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+.gv-slider-remove:hover {
+    background: rgba(231, 76, 60, 0.9);
+    color: #fff;
+    border-color: #ff3c3c;
+    transform: scale(1.15);
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+}

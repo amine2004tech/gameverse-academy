@@ -3,6 +3,7 @@ package ma.ac.esi.gameverseacademy.controller;
 import ma.ac.esi.gameverseacademy.model.Review;
 import ma.ac.esi.gameverseacademy.model.User;
 import ma.ac.esi.gameverseacademy.service.ReviewService;
+import ma.ac.esi.gameverseacademy.security.InputSanitizer;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -43,7 +44,7 @@ public class ReviewController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/ModDetailsController?id=" + modId);
             return;
         }
-        String comment = request.getParameter("comment");
+        String comment = InputSanitizer.sanitize(request.getParameter("comment"));
 
         Review review = new Review();
 

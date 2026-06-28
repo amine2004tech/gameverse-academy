@@ -1,6 +1,5 @@
 package ma.ac.esi.gameverseacademy.security;
 
-import ma.ac.esi.gameverseacademy.model.Mod;
 import ma.ac.esi.gameverseacademy.service.ModService.FileUploadEntry;
 
 import javax.servlet.http.Part;
@@ -9,85 +8,120 @@ import java.util.*;
 
 /**
  * Security Layer component for handling multi-part file uploads safely.
- * This moves infrastructure-heavy extraction logic out of the Controller.
+ * Returns structured validation errors instead of silently dropping files.
  */
 public class SecureUploadService {
 
-    // SEC-FIX: Strict extension allowlists
-    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
+    // Strict extension allowlists
+    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
     private static final Set<String> ALLOWED_MOD_EXTENSIONS = Set.of("zip", "rar", "7z");
-    private static final long MAX_IMAGE_SIZE = 10 * 1024 * 1024;  // 10MB per image
-    private static final long MAX_MOD_SIZE = 50 * 1024 * 1024;    // 50MB per mod file
+    private static final long MAX_IMAGE_SIZE_BYTES = 10L * 1024 * 1024;  // 10MB per image
+    private static final long MAX_MOD_PACKAGE_SIZE_BYTES = 500L * 1024 * 1024;   // 500MB per mod file
 
-    public static class UploadPackage {
+    /**
+     * Result object containing processed uploads AND any validation errors.
+     */
+    public static class UploadResult {
         private final List<FileUploadEntry> imageParts = new ArrayList<>();
         private FileUploadEntry zipPart = null;
+        private final List<String> errors = new ArrayList<>();
 
         public List<FileUploadEntry> getImageParts() { return imageParts; }
         public FileUploadEntry getZipPart() { return zipPart; }
+        public List<String> getErrors() { return errors; }
+        public boolean hasErrors() { return !errors.isEmpty(); }
     }
 
     /**
-     * Extracts and sanitizes file uploads from request parts.
-     * 
-     * @param parts The collection of parts from the HttpServletRequest
-     * @param mod   The Mod model to be enriched with metadata (e.g., filename)
-     * @return An UploadPackage containing processed FileUploadEntry objects
-     * @throws IOException If streaming fails
-     * @throws SecurityException If upload validation fails
+     * Extracts and validates file uploads from request parts.
+     * Invalid files produce user-readable errors instead of being silently dropped.
      */
-    public UploadPackage processSecureUploads(Collection<Part> parts, Mod mod) throws IOException {
-        UploadPackage pkg = new UploadPackage();
+    public UploadResult processSecureUploads(Collection<Part> parts) throws IOException {
+        UploadResult result = new UploadResult();
 
         for (Part part : parts) {
             String fieldName = part.getName();
-            
-            if ("modImages".equals(fieldName) && part.getSize() > 0) {
-                // SEC-FIX: Validate image uploads
-                String originalName = part.getSubmittedFileName();
-                String extension = getFileExtension(originalName);
-                
-                if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension.toLowerCase())) {
-                    System.err.println("[SecureUpload] Rejected image extension: " + extension);
-                    continue; // Skip disallowed file types
+
+            if ("modImages".equals(fieldName)) {
+                if (part.getSubmittedFileName() == null || part.getSubmittedFileName().trim().isEmpty()) {
+                    continue; // Skip empty file inputs (user didn't select a file)
                 }
-                if (part.getSize() > MAX_IMAGE_SIZE) {
-                    System.err.println("[SecureUpload] Rejected oversized image: " + part.getSize());
+
+                String originalName = part.getSubmittedFileName();
+                
+                if (part.getSize() == 0) {
+                    result.errors.add(sanitizeForDisplay(originalName) + " was rejected: file is empty.");
                     continue;
                 }
-                // SEC-FIX: Validate MIME type
+
+                String extension = getFileExtension(originalName);
+
+                // Validate extension
+                if (extension.isEmpty() || !ALLOWED_IMAGE_EXTENSIONS.contains(extension.toLowerCase())) {
+                    result.errors.add(sanitizeForDisplay(originalName) + " was rejected: images must be JPG, JPEG, PNG, or WEBP.");
+                    continue;
+                }
+
+                // Validate MIME type
                 String contentType = part.getContentType();
                 if (contentType == null || !contentType.startsWith("image/")) {
-                    System.err.println("[SecureUpload] Rejected non-image MIME: " + contentType);
+                    result.errors.add(sanitizeForDisplay(originalName) + " was rejected: file content is not a valid image.");
+                    continue;
+                }
+
+                // Reject SVG (even though extension wouldn't match, belt-and-suspenders)
+                if (contentType.contains("svg")) {
+                    result.errors.add(sanitizeForDisplay(originalName) + " was rejected: SVG images are not supported.");
+                    continue;
+                }
+
+                // Validate size
+                if (part.getSize() > MAX_IMAGE_SIZE_BYTES) {
+                    result.errors.add(sanitizeForDisplay(originalName) + " was rejected: image size exceeds 10 MB.");
                     continue;
                 }
 
                 String safeName = sanitizeFileName(originalName);
-                pkg.imageParts.add(new FileUploadEntry(part.getInputStream(), safeName));
-                
-            } else if ("modFile".equals(fieldName) && part.getSize() > 0) {
+                result.imageParts.add(new FileUploadEntry(part.getInputStream(), safeName));
+
+            } else if ("modFile".equals(fieldName)) {
+                if (part.getSubmittedFileName() == null || part.getSubmittedFileName().trim().isEmpty()) {
+                    continue;
+                }
+
                 String originalName = part.getSubmittedFileName();
-                String extension = getFileExtension(originalName);
-                
-                // SEC-FIX: Validate mod file extension
-                if (!ALLOWED_MOD_EXTENSIONS.contains(extension.toLowerCase())) {
-                    System.err.println("[SecureUpload] Rejected mod extension: " + extension);
+
+                if (part.getSize() == 0) {
+                    result.errors.add(sanitizeForDisplay(originalName) + " was rejected: archive file is empty.");
                     continue;
                 }
-                if (part.getSize() > MAX_MOD_SIZE) {
-                    System.err.println("[SecureUpload] Rejected oversized mod: " + part.getSize());
+
+                String extension = getFileExtension(originalName);
+
+                // Validate extension
+                if (extension.isEmpty() || !ALLOWED_MOD_EXTENSIONS.contains(extension.toLowerCase())) {
+                    result.errors.add(sanitizeForDisplay(originalName) + " was rejected: mod package must be ZIP, RAR, or 7Z.");
+                    continue;
+                }
+
+                // Reject dangerous double extensions
+                String secondExtension = getSecondToLastExtension(originalName);
+                if (isDangerousExtension(secondExtension)) {
+                    result.errors.add(sanitizeForDisplay(originalName) + " was rejected: mod package must be ZIP, RAR, or 7Z.");
+                    continue;
+                }
+
+                // Validate size
+                if (part.getSize() > MAX_MOD_PACKAGE_SIZE_BYTES) {
+                    result.errors.add(sanitizeForDisplay(originalName) + " was rejected: archive size exceeds 500 MB.");
                     continue;
                 }
 
                 String safeName = sanitizeFileName(originalName);
-                pkg.zipPart = new FileUploadEntry(part.getInputStream(), safeName);
-                
-                if (mod != null) {
-                    mod.setFileName(safeName); // Enriched model with sanitized name
-                }
+                result.zipPart = new FileUploadEntry(part.getInputStream(), safeName);
             }
         }
-        return pkg;
+        return result;
     }
 
     /**
@@ -104,13 +138,46 @@ public class SecureUploadService {
     }
 
     /**
-     * Extracts the file extension from a filename.
+     * Sanitizes a filename for safe display in error messages (prevent XSS in error text).
+     */
+    private String sanitizeForDisplay(String fileName) {
+        if (fileName == null) return "unknown";
+        // Strip to basename, limit length, remove HTML-dangerous chars
+        String baseName = new java.io.File(fileName).getName();
+        if (baseName.length() > 50) baseName = baseName.substring(0, 50) + "...";
+        return baseName.replaceAll("[<>\"'&]", "_");
+    }
+
+    /**
+     * Extracts the last file extension from a filename.
      */
     private String getFileExtension(String fileName) {
         if (fileName == null || !fileName.contains(".")) {
             return "";
         }
-        // SEC-FIX: Handle double extensions like file.php.jpg — get the LAST extension
         return fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+    }
+
+    /**
+     * Extracts the second-to-last extension (e.g., "exe" from "setup.exe.zip").
+     */
+    private String getSecondToLastExtension(String fileName) {
+        if (fileName == null) return "";
+        String withoutLast = fileName.substring(0, fileName.lastIndexOf('.'));
+        if (!withoutLast.contains(".")) return "";
+        return withoutLast.substring(withoutLast.lastIndexOf('.') + 1).toLowerCase();
+    }
+
+    /**
+     * Checks if an extension is a known dangerous/executable type.
+     */
+    private boolean isDangerousExtension(String ext) {
+        if (ext == null || ext.isEmpty()) return false;
+        Set<String> dangerous = Set.of(
+            "exe", "bat", "cmd", "sh", "ps1", "vbs", "vbe", "js", "jse",
+            "wsf", "wsh", "msi", "scr", "pif", "com", "hta",
+            "jar", "war", "jsp", "php", "asp", "aspx", "cgi", "py", "rb", "pl"
+        );
+        return dangerous.contains(ext.toLowerCase());
     }
 }

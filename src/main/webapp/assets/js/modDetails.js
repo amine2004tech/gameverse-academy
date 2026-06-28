@@ -13,8 +13,21 @@ function updateSlider() {
 
     // Update thumbnails
     thumbs.forEach((t, i) => {
-        if (i === currentSlide) t.classList.add('active');
-        else t.classList.remove('active');
+        if (i === currentSlide) {
+            t.classList.add('active');
+            // Auto-center the active thumbnail
+            const container = t.parentElement;
+            if (container) {
+                const scrollPos = t.offsetTop - (container.clientHeight / 2) + (t.clientHeight / 2);
+                container.scrollTo({
+                    top: scrollPos,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        else {
+            t.classList.remove('active');
+        }
     });
 }
 

@@ -11,4 +11,15 @@
     <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>
 
+  <!-- Custom Error Pages -->
+  <error-page>
+    <error-code>404</error-code>
+    <location>/error404.jsp</location>
+  </error-page>
+  
+  <error-page>
+    <error-code>403</error-code>
+    <location>/error403.jsp</location>
+  </error-page>
+
 </web-app>

@@ -5,6 +5,7 @@ import ma.ac.esi.gameverseacademy.model.User;
 import ma.ac.esi.gameverseacademy.service.ModService;
 import ma.ac.esi.gameverseacademy.service.ReviewService;
 import ma.ac.esi.gameverseacademy.service.UserService;
+import ma.ac.esi.gameverseacademy.security.InputSanitizer;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -91,7 +92,7 @@ public class ProfileController extends HttpServlet {
             // =========================
             case "updateUsername": {
 
-                String username = request.getParameter("username");
+                String username = InputSanitizer.sanitize(request.getParameter("username"));
 
                 userService.updateUsername(user.getId(), username);
                 break;
@@ -102,7 +103,7 @@ public class ProfileController extends HttpServlet {
             // =========================
             case "updateLogin": {
 
-                String login = request.getParameter("login");
+                String login = InputSanitizer.sanitize(request.getParameter("login"));
 
                 userService.updateLogin(user.getId(), login);
                 break;
@@ -130,7 +131,7 @@ public class ProfileController extends HttpServlet {
             // =========================
             case "updateAvatar": {
 
-                String avatar = request.getParameter("avatar");
+                String avatar = InputSanitizer.sanitize(request.getParameter("avatar"));
 
                 userService.updateAvatar(user.getId(), avatar);
 
